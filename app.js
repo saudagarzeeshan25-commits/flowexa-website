@@ -1,86 +1,141 @@
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec";
+
 const CAL_LINK = "https://cal.com/saudagar-zeeshan-sttyxl/30min";
 
 const RESOURCE_META = {
   playbook: {
-    title:"The Booked Job Playbook™",
-    kicker:"FREE PDF — THE BOOKED JOB PLAYBOOK™",
-    description:"The operating framework for an established home-service business that already has demand and wants to turn more of it into booked, completed and collected jobs.",
-    file:"booked-job-playbook.pdf"
+    title: "The Booked Job Playbook™",
+    kicker: "FREE PDF — THE BOOKED JOB PLAYBOOK™",
+    description:
+      "The operating framework for an established home-service business that already has demand and wants to turn more of it into booked, completed and collected jobs.",
+    file: "booked-job-playbook.pdf"
   },
+
   recovery: {
-    title:"Revenue Recovery Map™",
-    kicker:"FREE PDF — REVENUE RECOVERY MAP™",
-    description:"A practical map for finding money already sitting in missed calls, stale estimates, cancellations and other pipeline leaks.",
-    file:"revenue-recovery-map.pdf"
+    title: "Revenue Recovery Map™",
+    kicker: "FREE PDF — REVENUE RECOVERY MAP™",
+    description:
+      "A practical map for finding money already sitting in missed calls, stale estimates, cancellations and other pipeline leaks.",
+    file: "revenue-recovery-map.pdf"
   },
+
   followup: {
-    title:"Lead Follow-Up Sequence™",
-    kicker:"FREE PDF — LEAD FOLLOW-UP SEQUENCE™",
-    description:"A decision-based follow-up framework for leads that did not book on the first interaction.",
-    file:"lead-follow-up-sequence.pdf"
+    title: "Lead Follow-Up Sequence™",
+    kicker: "FREE PDF — LEAD FOLLOW-UP SEQUENCE™",
+    description:
+      "A decision-based follow-up framework for leads that did not book on the first interaction.",
+    file: "lead-follow-up-sequence.pdf"
   },
+
   receptionist: {
-    title:"AI Receptionist Blueprint™",
-    kicker:"FREE PDF — AI RECEPTIONIST BLUEPRINT™",
-    description:"A practical guide to where AI can earn money in an established home-service operation—and where human judgment still matters.",
-    file:"ai-receptionist-blueprint.pdf"
+    title: "AI Receptionist Blueprint™",
+    kicker: "FREE PDF — AI RECEPTIONIST BLUEPRINT™",
+    description:
+      "A practical guide to where AI can earn money in an established home-service operation—and where human judgment still matters.",
+    file: "ai-receptionist-blueprint.pdf"
   }
 };
+
 
 function toggleMenu() {
   document.getElementById("navLinks").classList.toggle("open");
 }
 
+
 function closeModal() {
   const m = document.getElementById("modal");
+
   m.classList.remove("open");
-  m.setAttribute("aria-hidden","true");
+  m.setAttribute("aria-hidden", "true");
 }
+
 
 function openModal(html) {
   const m = document.getElementById("modal");
+
   document.getElementById("modalContent").innerHTML = html;
+
   m.classList.add("open");
-  m.setAttribute("aria-hidden","false");
+  m.setAttribute("aria-hidden", "false");
 }
+
 
 function openResource(key) {
   const r = RESOURCE_META[key];
 
   openModal(`
     <div class="eyebrow">${r.kicker}</div>
+
     <h2>Get the full operating guide.</h2>
-    <p>${r.description} Enter your details once. The PDF becomes available immediately after submission.</p>
+
+    <p>
+      ${r.description}
+      Enter your details once. The PDF becomes available immediately after submission.
+    </p>
 
     <form class="resource-form" id="resourceForm">
-      <input type="hidden" name="type" value="resource-download">
-      <input type="hidden" name="resource" value="${key}">
-      <input type="hidden" name="page" value="resource-modal">
+
+      <input
+        type="hidden"
+        name="type"
+        value="resource-download"
+      >
+
+      <input
+        type="hidden"
+        name="resource"
+        value="${key}"
+      >
+
+      <input
+        type="hidden"
+        name="page"
+        value="resource-modal"
+      >
 
       <label>
         Full name *
-        <input required name="name" autocomplete="name">
+        <input
+          required
+          name="name"
+          autocomplete="name"
+        >
       </label>
 
       <label>
         Business email *
-        <input required type="email" name="email" autocomplete="email">
+        <input
+          required
+          type="email"
+          name="email"
+          autocomplete="email"
+        >
       </label>
 
       <label>
         Business name *
-        <input required name="company">
+        <input
+          required
+          name="company"
+        >
       </label>
 
       <label>
         Website *
-        <input required type="url" name="website" placeholder="https://">
+        <input
+          required
+          type="url"
+          name="website"
+          placeholder="https://"
+        >
       </label>
 
       <label>
         Business type *
-        <select required name="businessType">
+        <select
+          required
+          name="businessType"
+        >
           <option value="">Select one</option>
           <option>Roofing</option>
           <option>HVAC</option>
@@ -94,7 +149,10 @@ function openResource(key) {
 
       <label>
         Biggest focus right now *
-        <select required name="challenge">
+        <select
+          required
+          name="challenge"
+        >
           <option value="">Select one</option>
           <option>Convert more existing leads</option>
           <option>Recover missed calls</option>
@@ -105,14 +163,22 @@ function openResource(key) {
       </label>
 
       <div class="wide download-note">
-        Required fields are intentional: this gives Flowexa enough context to follow up with something relevant rather than generic marketing.
+        Required fields are intentional: this gives Flowexa enough context
+        to follow up with something relevant rather than generic marketing.
       </div>
 
-      <button class="btn btn-primary" type="submit">
+      <button
+        class="btn btn-primary"
+        type="submit"
+      >
         Download My PDF →
       </button>
 
-      <p class="form-status wide" id="resourceStatus"></p>
+      <p
+        class="form-status wide"
+        id="resourceStatus"
+      ></p>
+
     </form>
   `);
 
@@ -121,29 +187,34 @@ function openResource(key) {
     .addEventListener("submit", e => submitResource(e, key));
 }
 
+
 async function postLead(data) {
   try {
     await fetch(ENDPOINT, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{
-        "Content-Type":"text/plain;charset=utf-8"
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
       },
-      body:JSON.stringify(data)
+      body: JSON.stringify(data)
     });
 
     return true;
-  } catch(e) {
-    console.error(e);
+
+  } catch (e) {
+    console.error("Lead submission error:", e);
     return false;
   }
 }
+
 
 async function submitResource(e, key) {
   e.preventDefault();
 
   const form = e.target;
+
   const status = document.getElementById("resourceStatus");
+
   const data = Object.fromEntries(
     new FormData(form).entries()
   );
@@ -151,17 +222,30 @@ async function submitResource(e, key) {
   status.textContent = "Preparing your PDF…";
 
   const ok = await postLead(data);
+
   const r = RESOURCE_META[key];
 
   status.textContent = "";
 
+  if (!ok) {
+    status.textContent =
+      "Something went wrong. Please try again.";
+
+    return;
+  }
+
   document.getElementById("modalContent").innerHTML = `
     <div class="success">
+
       <div class="big">✓</div>
 
-      <div class="eyebrow">${r.kicker}</div>
+      <div class="eyebrow">
+        ${r.kicker}
+      </div>
 
-      <h2>Your guide is ready.</h2>
+      <h2>
+        Your guide is ready.
+      </h2>
 
       <p>
         Your details have been submitted and the operating guide is ready to open.
@@ -188,16 +272,22 @@ async function submitResource(e, key) {
       >
         Book a Strategy Call →
       </a>
+
     </div>
   `;
 }
 
-document
-  .getElementById("leadForm")
-  .addEventListener("submit", async e => {
+
+const leadForm = document.getElementById("leadForm");
+
+if (leadForm) {
+
+  leadForm.addEventListener("submit", async e => {
+
     e.preventDefault();
 
     const status = document.getElementById("formStatus");
+
     const data = Object.fromEntries(
       new FormData(e.target).entries()
     );
@@ -210,57 +300,107 @@ document
       ? "Request received. We'll review the information and follow up."
       : "Something went wrong. Please try again or book a strategy call directly.";
 
-    if(ok) {
+    if (ok) {
       e.target.reset();
     }
+
   });
 
+}
+
+
 function calc() {
+
+  const missedCallsInput =
+    document.getElementById("missedCalls");
+
+  const avgJobInput =
+    document.getElementById("avgJob");
+
+  const bookingRateInput =
+    document.getElementById("bookingRate");
+
+  const lossElement =
+    document.getElementById("loss");
+
+  if (
+    !missedCallsInput ||
+    !avgJobInput ||
+    !bookingRateInput ||
+    !lossElement
+  ) {
+    return;
+  }
+
   const calls = Math.max(
     0,
-    Number(document.getElementById("missedCalls").value) || 0
+    Number(missedCallsInput.value) || 0
   );
 
   const avg = Math.max(
     0,
-    Number(document.getElementById("avgJob").value) || 0
+    Number(avgJobInput.value) || 0
   );
 
-  const rate = Math.min(
-    100,
-    Math.max(
-      0,
-      Number(document.getElementById("bookingRate").value) || 0
-    )
-  ) / 100;
+  const rate =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Number(bookingRateInput.value) || 0
+      )
+    ) / 100;
 
   const loss = calls * rate * avg;
 
-  document.getElementById("loss").textContent =
+  lossElement.textContent =
     loss.toLocaleString("en-US", {
-      style:"currency",
-      currency:"USD",
-      maximumFractionDigits:0
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
     });
 }
 
-["missedCalls","avgJob","bookingRate"].forEach(id =>
-  document
-    .getElementById(id)
-    .addEventListener("input", calc)
-);
+
+["missedCalls", "avgJob", "bookingRate"].forEach(id => {
+
+  const element = document.getElementById(id);
+
+  if (element) {
+    element.addEventListener("input", calc);
+  }
+
+});
+
 
 calc();
 
-window.addEventListener("scroll", () => {
-  const h = document.documentElement.scrollHeight - innerHeight;
 
-  document.querySelector(".progress").style.width =
-    (h > 0 ? (scrollY / h) * 100 : 0) + "%";
+window.addEventListener("scroll", () => {
+
+  const progress =
+    document.querySelector(".progress");
+
+  if (!progress) {
+    return;
+  }
+
+  const h =
+    document.documentElement.scrollHeight -
+    innerHeight;
+
+  progress.style.width =
+    (h > 0
+      ? (scrollY / h) * 100
+      : 0) + "%";
+
 });
 
+
 document.addEventListener("keydown", e => {
-  if(e.key === "Escape") {
+
+  if (e.key === "Escape") {
     closeModal();
   }
+
 });
