@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="Flowexa builds AI-powered revenue and operations systems for home-service businesses.">
+<link rel="icon" type="image/png" href="assets/flowexa-mark.png">
+<title>Flowexa — Turn Missed Opportunities Into Booked Jobs</title>
+<style>
+:root{
+  --ink:#07111f;--muted:#607087;--blue:#1d68f2;--cyan:#06c9df;--purple:#7a3ff0;
+  --line:#e6ebf2;--soft:#f7f9fc;--white:#fff;
+  --grad:linear-gradient(110deg,#09cfe2 0%,#1d68f2 48%,#9b2df2 100%);
+  --shadow:0 24px 70px rgba(7,17,31,.09);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#fff;line-height:1.55}
+body.modal-open{overflow:hidden}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+.container{max-width:1180px;margin:auto;padding:0 28px}
+.nav{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(230,235,242,.8)}
+.navin{height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brandlogo{width:140px;display:block}
+.links{display:flex;gap:25px;color:#526177;font-size:14px}
+.links a{transition:.2s}.links a:hover{color:var(--blue)}
+.navcta{display:flex;gap:9px}
+.btn{position:relative;border:0;border-radius:13px;padding:12px 17px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .2s,box-shadow .2s,background .2s;overflow:hidden}
+.btn:hover{transform:translateY(-2px)}
+.outline{background:#fff;color:var(--ink);border:1px solid #d8e0ea}
+.primary{background:var(--ink);color:#fff;box-shadow:0 12px 28px rgba(7,17,31,.14)}
+.blue{background:var(--blue);color:#fff;box-shadow:0 12px 28px rgba(29,104,242,.22)}
+.glow{animation:glow 2.7s ease-in-out infinite;isolation:isolate}
+.glow:after{content:"";position:absolute;inset:-2px;border-radius:inherit;box-shadow:0 0 24px rgba(29,104,242,.16);z-index:-1}
+.pulse{animation:glow 2.7s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 10px 28px rgba(29,104,242,.18),0 0 0 0 rgba(29,104,242,.0)}50%{box-shadow:0 16px 42px rgba(29,104,242,.42),0 0 0 9px rgba(29,104,242,.08),0 0 32px rgba(122,63,240,.18)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.hero{padding:92px 0 78px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:70px;align-items:center}
+.eyebrow{font-size:12px;font-weight:850;letter-spacing:.17em;text-transform:uppercase;color:var(--blue);margin-bottom:18px}
+.hero h1{font-size:clamp(50px,6.4vw,84px);line-height:.96;letter-spacing:-.068em;margin:0 0 25px;max-width:820px}
+.gradient{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font-size:18px;color:var(--muted);max-width:690px;margin:0 0 31px}
+.actions{display:flex;gap:12px;flex-wrap:wrap}
+.micro{font-size:12px;color:#7d8999;margin-top:14px}
+.hero-visual{border:1px solid var(--line);border-radius:30px;background:linear-gradient(145deg,#fff,#f7fbff);padding:30px;box-shadow:var(--shadow);position:relative;animation:float 6s ease-in-out infinite}
+.hero-visual:before{display:none}
+.tag{display:inline-flex;padding:6px 10px;border-radius:999px;background:#eef4ff;color:#235bc6;font-size:11px;font-weight:850;letter-spacing:.04em}
+.flow{display:grid;gap:10px;margin-top:18px}
+.node{padding:17px 18px;border:1px solid var(--line);border-radius:16px;background:#fff;display:flex;align-items:center;gap:12px;box-shadow:0 9px 28px rgba(7,17,31,.035)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--grad);flex:0 0 auto}
+.small{font-size:13px;color:var(--muted)}
+.node .small{margin-left:auto}
+.arrow{text-align:center;color:#a2adbc;font-size:18px}
+.section{padding:98px 0}
+.soft{background:var(--soft)}
+.section-head{max-width:780px;margin-bottom:42px}
+.section-head h2{font-size:clamp(40px,5vw,64px);line-height:1.02;letter-spacing:-.055em;margin:0 0 16px}
+.section-head p{font-size:17px;color:var(--muted);margin:0}
+.workflow{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff}
+.step{padding:26px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:150px}
+.step:nth-child(4n){border-right:0}.step:nth-last-child(-n+4){border-bottom:0}
+.step strong{display:block;font-size:15px}.step span{display:block;color:var(--muted);font-size:13px;margin-top:8px}
+.systems{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{border:1px solid var(--line);border-radius:20px;padding:25px;background:#fff;transition:.25s}
+.card:hover{transform:translateY(-4px);box-shadow:0 18px 45px rgba(7,17,31,.08);border-color:#d6e0f0}
+.card h3{font-size:21px;letter-spacing:-.025em;margin:12px 0 8px}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.card .num{font-size:11px;font-weight:850;letter-spacing:.12em;color:var(--blue)}
+.resource-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.resource{padding:28px;border:1px solid var(--line);border-radius:22px;background:#fff;min-height:235px;display:flex;flex-direction:column}
+.resource h3{font-size:24px;letter-spacing:-.035em;margin:12px 0 9px}
+.resource p{color:var(--muted);font-size:14px;margin:0}
+.resource .resource-cta{margin-top:auto;padding-top:22px}
+.resource.featured{background:linear-gradient(145deg,#07111f,#12213b);color:#fff;border-color:#07111f}
+.resource.featured p{color:#c6d0df}.resource.featured .tag{background:rgba(255,255,255,.1);color:#dce9ff}
+.industry-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.industry{padding:28px;border:1px solid var(--line);border-radius:18px;background:#fff;font-weight:850;transition:.2s}
+.industry:hover{transform:translateY(-3px);box-shadow:0 14px 35px rgba(7,17,31,.06)}
+.calculator{display:grid;grid-template-columns:.9fr 1.1fr;gap:22px;align-items:stretch}
+.calc-panel,.calc-result{border:1px solid var(--line);border-radius:22px;padding:28px;background:#fff}
+.calc-panel{background:linear-gradient(145deg,#f9fbff,#fff)}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:grid;gap:6px}.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:800}
+.field input,.field select,.field textarea{width:100%;border:1px solid #d9e1eb;border-radius:11px;padding:11px 12px;outline:none;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,104,242,.1)}
+.calc-result{display:flex;flex-direction:column;justify-content:center;min-height:300px}
+.big-number{font-size:70px;font-weight:950;letter-spacing:-.065em;line-height:1}
+.score-ring{font-size:70px;font-weight:950;letter-spacing:-.07em}
+.cta-band{border-radius:30px;background:var(--ink);color:#fff;padding:58px}
+.cta-band p{color:#c7d0dd;max-width:720px}
+.footer{padding:48px 0;border-top:1px solid var(--line)}
+.footerin{display:flex;justify-content:space-between;align-items:center;gap:25px}
+.footerlogo{width:130px}
+.modal{position:fixed;inset:0;background:rgba(7,17,31,.58);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;z-index:80}
+.modal.open{display:flex}
+.modalbox{width:min(860px,100%);max-height:91vh;overflow:auto;background:#fff;border-radius:25px;padding:31px;box-shadow:0 35px 100px rgba(0,0,0,.24);position:relative;animation:rise .2s ease-out}
+.modalbox.wide{width:min(980px,100%)}
+.close{position:absolute;right:17px;top:16px;width:35px;height:35px;border:0;border-radius:50%;background:#f0f3f7;font-size:18px}
+.modalbox h2{font-size:38px;line-height:1.05;letter-spacing:-.05em;margin:0 0 13px}
+.modalbox h3{font-size:20px;letter-spacing:-.025em;margin:25px 0 8px}
+.resource-copy{color:#46566d;font-size:14px}.resource-copy ul,.resource-copy ol{padding-left:20px}.resource-copy li{margin:7px 0}
+.resource-copy .principle{border-left:3px solid var(--blue);padding:12px 16px;background:#f7faff;border-radius:0 12px 12px 0;margin:18px 0}
+.resource-copy .scorecard{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.scorecard div{border:1px solid var(--line);border-radius:13px;padding:15px;background:#fafcff}.scorecard strong{display:block}.scorecard span{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.cal-wrap{height:650px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+.cal-wrap iframe{width:100%;height:100%;border:0}
+.note{padding:12px 14px;background:#f7f9fc;border:1px solid var(--line);border-radius:12px;font-size:12px;color:#64748b}
+.quiz{max-width:760px}.progress{height:7px;background:#e9edf3;border-radius:99px;overflow:hidden;margin:18px 0 25px}.bar{height:100%;background:var(--grad);transition:.25s}.answers{display:grid;gap:10px}.answer{padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:left}.answer:hover{border-color:#9db7f7;background:#f9fbff}
+.resultgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.resultitem{border:1px solid var(--line);border-radius:15px;padding:18px;background:#fff}.status{font-size:11px;font-weight:850}.high{color:#dc2626}.med{color:#b45309}.strong{color:#059669}
+.output{background:#07111f;color:#eaf1fb;border-radius:18px;padding:22px;white-space:pre-wrap;min-height:300px;font-size:13px}
+.toast{position:fixed;right:22px;bottom:22px;background:#07111f;color:#fff;padding:13px 16px;border-radius:12px;display:none;z-index:100}.toast.show{display:block}
+
+.auto-pill{font-style:normal;font-size:8px;letter-spacing:.08em;color:#fff;background:linear-gradient(110deg,#06c9df,#1d68f2,#7a3ff0);padding:4px 6px;border-radius:999px;vertical-align:middle;box-shadow:0 0 16px rgba(29,104,242,.28);animation:autoGlow 2.5s ease-in-out infinite}
+@keyframes autoGlow{0%,100%{box-shadow:0 0 8px rgba(29,104,242,.12)}50%{box-shadow:0 0 20px rgba(29,104,242,.38),0 0 28px rgba(122,63,240,.16)}}
+.leak-result{color:#b91c1c}.leak-result .big-number{color:#b91c1c;text-shadow:0 0 22px rgba(220,38,38,.16)}
+.leak-bar{height:10px;border-radius:999px;background:#eef1f5;overflow:hidden;margin:15px 0 8px}.leak-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#fca5a5,#dc2626,#991b1b);box-shadow:0 0 16px rgba(220,38,38,.18)}
+.pdf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}.pdf-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fafcff}.pdf-card strong{display:block}.pdf-card span{font-size:12px;color:var(--muted)}
+@media(max-width:920px){
+ .links{display:none}.hero-grid,.calculator{grid-template-columns:1fr}.workflow{grid-template-columns:1fr 1fr}.systems{grid-template-columns:1fr 1fr}.industry-grid{grid-template-columns:1fr 1fr}
+ .hero{padding-top:65px}.hero h1{font-size:55px}.navcta .outline{display:none}.resource-grid{grid-template-columns:1fr}
+ .step:nth-child(2n){border-right:0}.step:nth-last-child(-n+4){border-bottom:1px solid var(--line)}.step:nth-last-child(-n+2){border-bottom:0}
+}
+@media(max-width:600px){
+ .container{padding:0 18px}.hero h1{font-size:45px}.hero p{font-size:16px}.section{padding:72px 0}.systems,.industry-grid,.workflow{grid-template-columns:1fr}
+ .step{border-right:0!important;border-bottom:1px solid var(--line)!important}.step:last-child{border-bottom:0!important}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}
+ .cta-band{padding:38px 24px}.footerin{flex-direction:column;align-items:flex-start}.modalbox{padding:24px}.modalbox h2{font-size:30px}.cal-wrap{height:620px}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="container navin">
+    <a href="#top"><img class="brandlogo" src="assets/flowexa-full.png" alt="Flowexa"></a>
+    <nav class="links">
+      <a href="#systems">Solutions</a><a href="#industries">Industries</a><a href="#how">How It Works</a><a href="#resources">Free Resources</a><a href="#contact">Contact</a>
+    </nav>
+    <div class="navcta">
+      <button class="btn outline" onclick="openModal('pilot')">Free Pilot</button>
+      <button class="btn blue glow pulse" onclick="openCal()">Book a Strategy Call <span>→</span></button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow">AI Revenue & Operations Systems</div>
+      <h1>Turn Missed Opportunities <span class="gradient">Into Booked Jobs.</span></h1>
+      <p>Flowexa builds practical AI-powered systems for home-service businesses — from lead response and qualification to appointment booking, follow-up and owner-level reporting.</p>
+      <div class="actions">
+        <button class="btn blue glow pulse" onclick="openCal()">Book a Strategy Call <span>→</span></button>
+        <button class="btn outline" onclick="openModal('pilot')">Apply for the Free Pilot</button>
+      </div>
+      <div class="micro">No obligation. We look for the revenue leak before recommending a system.</div>
+    </div>
+    <div class="hero-visual">
+      <span class="tag">THE BOOKED JOB SYSTEM™</span>
+      <div class="flow">
+        <div class="node"><span class="dot"></span><strong>Lead arrives</strong><span class="small">phone · web · SMS</span></div>
+        <div class="arrow">↓</div>
+        <div class="node"><span class="dot"></span><strong>AI responds</strong><span class="small">speed-to-lead</span></div>
+        <div class="arrow">↓</div>
+        <div class="node"><span class="dot"></span><strong>AI qualifies</strong><span class="small">service · location · urgency</span></div>
+        <div class="arrow">↓</div>
+        <div class="node"><span class="dot"></span><strong>Appointment booked</strong><span class="small">calendar-aware</span></div>
+        <div class="arrow">↓</div>
+        <div class="node"><span class="dot"></span><strong>Follow-up + reporting</strong><span class="small">owner sees the leaks</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section soft" id="how">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">One connected journey</div>
+      <h2>Make every serious inquiry harder to lose.</h2>
+      <p>Flowexa starts with the customer journey, then uses AI and automation where they remove a real bottleneck.</p>
+    </div>
+    <div class="workflow">
+      <div class="step"><strong>01 · Capture</strong><span>Phone, web, SMS and inbound lead sources.</span></div>
+      <div class="step"><strong>02 · Respond</strong><span>Acknowledge the inquiry quickly and clearly.</span></div>
+      <div class="step"><strong>03 · Qualify</strong><span>Collect the details needed to decide the next step.</span></div>
+      <div class="step"><strong>04 · Book</strong><span>Route qualified prospects toward an appointment.</span></div>
+      <div class="step"><strong>05 · Confirm</strong><span>Reduce avoidable no-shows and confusion.</span></div>
+      <div class="step"><strong>06 · Follow Up <em class="auto-pill">AUTOMATE</em></strong><span>Keep legitimate opportunities alive after the first contact.</span></div>
+      <div class="step"><strong>07 · Reactivate <em class="auto-pill">AUTOMATE</em></strong><span>Find value in old estimates and dormant customers.</span></div>
+      <div class="step"><strong>08 · Report <em class="auto-pill">AUTOMATE</em></strong><span>Show owners where revenue is leaking.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="systems">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">What Flowexa can build</div>
+      <h2>Systems around revenue, not technology for technology's sake.</h2>
+    </div>
+    <div class="systems">
+      <div class="card"><div class="num">01</div><h3>Lead Response & Recovery</h3><p>Respond to new inquiries, recover missed calls and route serious opportunities before they go cold.</p></div>
+      <div class="card"><div class="num">02</div><h3>Qualification & Booking</h3><p>Collect the right information, filter fit and move qualified prospects toward the right appointment.</p></div>
+      <div class="card"><div class="num">03</div><h3>Follow-Up & Reactivation</h3><p>Build disciplined follow-up for new leads, estimates, no-decisions and dormant customers.</p></div>
+      <div class="card"><div class="num">04</div><h3>Owner Reporting</h3><p>Turn scattered activity into a simple view of leads, appointments, conversion and recovery opportunities.</p></div>
+      <div class="card"><div class="num">05</div><h3>Workflow Automation</h3><p>Connect the tools you already use so repetitive handoffs happen automatically and consistently.</p></div>
+      <div class="card"><div class="num">06</div><h3>AI Front Desk</h3><p>Design a controlled AI receptionist around your actual services, hours, service area, escalation rules and booking process.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section soft" id="calculator">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Free tool</div>
+      <h2>Revenue Leak Calculator™</h2>
+      <p>Estimate the monthly revenue opportunity hiding inside missed calls and unbooked demand. Use your own numbers.</p>
+    </div>
+    <div class="calculator">
+      <div class="calc-panel">
+        <div class="formgrid">
+          <div class="field"><label>Missed calls / month *</label><input id="missed" type="number" min="0" value="20" required></div>
+          <div class="field"><label>Booking rate from missed calls *</label><input id="rate" type="number" min="0" max="100" value="25" required></div>
+          <div class="field full"><label>Average job value ($) *</label><input id="job" type="number" min="0" value="2500" required></div>
+        </div>
+        <button class="btn blue glow" style="margin-top:16px" onclick="calcLeak()">Calculate My Revenue Leak →</button>
+        <div class="note" style="margin-top:13px">This is an estimate, not a promise. Replace the assumptions with your actual numbers.</div>
+      </div>
+      <div class="calc-result leak-result" id="calcresult">
+        <div class="eyebrow" style="color:#dc2626">Estimated revenue currently at risk</div>
+        <div class="big-number">$12,500</div>
+        <div class="leak-bar"><span style="width:72%"></span></div>
+        <p class="small"><strong>That is money already entering the top of your funnel and potentially being lost before it becomes booked work.</strong></p>
+        <div class="actions" style="margin-top:12px"><button class="btn outline" onclick="openModal('calcLead')">Email Me This Analysis →</button><button class="btn outline" onclick="openModal('audit')">Find the Bigger Leaks →</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="resources">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">The Flowexa Free Resource Library™</div>
+      <h2>Free operating systems for businesses that are already winning.</h2>
+      <p>These are not beginner guides on “how to start a business.” They are designed for established home-service operators who already have leads, customers and revenue — but want to capture more of the value already moving through the business.</p>
+    </div>
+    <div class="resource-grid">
+      <article class="resource featured">
+        <span class="tag">CORE OPERATOR GUIDE</span>
+        <h3>The Booked Job Playbook™</h3>
+        <p>A step-by-step operating system for tightening an already-growing home-service business — from bottleneck diagnosis to follow-up, recovery, measurement and finally AI.</p>
+        <div class="resource-cta"><button class="btn blue glow" onclick="openPdfGate('playbook')">Download the PDF →</button></div>
+      </article>
+      <article class="resource featured">
+        <span class="tag">60-SECOND DIAGNOSTIC</span>
+        <h3>Booked Job Score™</h3>
+        <p>Eight quick questions. Get a directional diagnosis of the biggest lead-to-booking gaps and the area I'd investigate first.</p>
+        <div class="resource-cta"><button class="btn blue glow" onclick="openModal('audit')">Take the 60-Second Score →</button></div>
+      </article>
+      <article class="resource">
+        <span class="tag">REVENUE DIAGNOSTIC</span>
+        <h3>Revenue Recovery Map™</h3>
+        <p>Find the money hiding in missed calls, unsold estimates, no-shows, dormant leads and past customers before spending more on acquisition.</p>
+        <div class="resource-cta"><button class="btn outline" onclick="openPdfGate('recovery')">Download the PDF →</button></div>
+      </article>
+      <article class="resource">
+        <span class="tag">FOLLOW-UP ENGINE</span>
+        <h3>Lead Follow-Up Sequence™</h3>
+        <p>A stage-based follow-up operating system for serious opportunities — not a pile of generic “just checking in” messages.</p>
+        <div class="resource-cta"><button class="btn outline" onclick="openPdfGate('followup')">Download the PDF →</button></div>
+      </article>
+      <article class="resource">
+        <span class="tag">AI IMPLEMENTATION</span>
+        <h3>AI Front Desk Blueprint™</h3>
+        <p>How to decide what AI should handle, what it should never handle, and how to build clean human escalation before giving AI authority.</p>
+        <div class="resource-cta"><button class="btn outline" onclick="openPdfGate('receptionist')">Download the PDF →</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section soft" id="industries">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Built for local service economics</div>
+      <h2>High-value services where response time and follow-up matter.</h2>
+    </div>
+    <div class="industry-grid">
+      <div class="industry">Roofing</div><div class="industry">HVAC</div><div class="industry">Plumbing</div><div class="industry">Kitchen Remodeling</div>
+      <div class="industry">Interior Design</div><div class="industry">Med Spas</div><div class="industry">Electrical</div><div class="industry">Other Home Services</div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <div class="eyebrow" style="color:#6ec7ff">When you're ready</div>
+      <h2 style="font-size:clamp(38px,5vw,60px);line-height:1.03;letter-spacing:-.05em;margin:0 0 15px">Stop guessing where the money is leaking.</h2>
+      <p>Bring your current process. We'll look at the customer journey, identify the highest-value bottleneck and tell you what we'd fix first.</p>
+      <div class="actions" style="margin-top:24px">
+        <button class="btn blue glow pulse" onclick="openCal()">Book a Strategy Call →</button>
+        <button class="btn" style="background:#fff;color:var(--ink)" onclick="openModal('pilot')">Apply for the Free Pilot</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section soft" id="contact">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Contact Flowexa</div>
+      <h2>Tell us what you want to improve.</h2>
+      <p>Every required field is intentional. It gives us enough context to avoid sending you a generic answer.</p>
+    </div>
+    <div class="card">
+      <form onsubmit="submitLead(event,'contact')">
+        <div class="formgrid">
+          <div class="field"><label>Full name *</label><input name="name" required></div>
+          <div class="field"><label>Business email *</label><input name="email" type="email" required></div>
+          <div class="field"><label>Business name *</label><input name="company" required></div>
+          <div class="field"><label>Website *</label><input name="website" type="url" placeholder="https://" required></div>
+          <div class="field"><label>Business type *</label><select name="type" required><option value="">Select one</option><option>Roofing</option><option>HVAC</option><option>Plumbing</option><option>Kitchen Remodeling</option><option>Interior Design</option><option>Med Spa</option><option>Other Home Service</option></select></div>
+          <div class="field"><label>What needs improvement? *</label><select name="challenge" required><option value="">Select one</option><option>Missed calls / slow response</option><option>Lead qualification</option><option>Appointment booking</option><option>Follow-up</option><option>Old lead reactivation</option><option>Reporting / visibility</option><option>Other</option></select></div>
+          <div class="field full"><label>Tell us what is happening today *</label><textarea name="details" rows="5" required placeholder="What happens from the moment a lead contacts you until the job is booked?"></textarea></div>
+        </div>
+        <button class="btn blue glow" style="margin-top:18px">Send Request →</button>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="container footerin">
+    <img class="footerlogo" src="assets/flowexa-full.png" alt="Flowexa">
+    <div class="muted">© 2026 Flowexa. AI-powered revenue & operations systems.</div>
+    <button class="btn outline" onclick="openCal()">Book a Strategy Call →</button>
+  </div>
+</footer>
+
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modalbox wide" id="modalcontent">
+    <button class="close" onclick="closeModal()" aria-label="Close">×</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const CAL_URL="https://cal.com/saudagar-zeeshan-sttyxl/30min";
+const CONFIG={
+  // Paste your deployed Google Apps Script /exec URL here.
+  SHEET_WEBHOOK_URL:"https://script.google.com/macros/s/AKfycbwHNrKEfAjCsiBzsjlLwjRo6nxAcbanUYf5DW-aZZDy_WoNYOs7XbR5z5BSdNo-d4AGpg/exec"
+};
+const PDFS={
+  playbook:"assets/pdfs/booked-job-playbook.pdf",
+  recovery:"assets/pdfs/revenue-recovery-map.pdf",
+  followup:"assets/pdfs/lead-follow-up-sequence.pdf",
+  receptionist:"assets/pdfs/ai-front-desk-blueprint.pdf"
+};
+let pendingPdf="";
+
+
+function openCal(){
+  const m=document.getElementById('modal'), c=document.getElementById('modalcontent');
+  c.innerHTML=`<button class="close" onclick="closeModal()">×</button>
+    <div class="eyebrow">Flowexa Strategy Call</div>
+    <h2>Let's find the highest-value leak first.</h2>
+    <p class="small">Choose a time that works. If the calendar cannot load in the preview, use the button below to open Cal.com directly.</p>
+    <div class="cal-wrap"><iframe src="${CAL_URL}?embed=true" title="Book a Flowexa Strategy Call" loading="lazy"></iframe></div>
+    <div style="margin-top:13px"><a class="btn outline" href="${CAL_URL}" target="_blank" rel="noopener">Open Cal.com directly →</a></div>`;
+  openModalShell();
+}
+function openModalShell(){const m=document.getElementById('modal');m.classList.add('open');m.setAttribute('aria-hidden','false');document.body.classList.add('modal-open')}
+function openPdfGate(type){
+  pendingPdf=type;
+  const names={playbook:"The Booked Job Playbook™",recovery:"Revenue Recovery Map™",followup:"Lead Follow-Up Sequence™",receptionist:"AI Front Desk Blueprint™"};
+  const c=document.getElementById('modalcontent');
+  c.innerHTML=`<button class="close" onclick="closeModal()">×</button>
+    <div class="eyebrow">Free PDF — ${names[type]}</div>
+    <h2>Get the full operating guide.</h2>
+    <p class="small">Enter your details once. The PDF will download immediately after submission. Your information is used so Flowexa can follow up with the resource and understand which problem you care about.</p>
+    <form onsubmit="submitPdfLead(event)">
+      <div class="formgrid">
+        <div class="field"><label>Full name *</label><input name="name" required></div>
+        <div class="field"><label>Business email *</label><input name="email" type="email" required></div>
+        <div class="field"><label>Business name *</label><input name="company" required></div>
+        <div class="field"><label>Website *</label><input name="website" type="url" placeholder="https://" required></div>
+        <div class="field"><label>Business type *</label><select name="businessType" required><option value="">Select one</option><option>Roofing</option><option>HVAC</option><option>Plumbing</option><option>Kitchen Remodeling</option><option>Interior Design</option><option>Med Spa</option><option>Electrical</option><option>Other Home Service</option></select></div>
+        <div class="field"><label>Biggest focus right now *</label><select name="challenge" required><option value="">Select one</option><option>Convert more existing leads</option><option>Recover missed calls / old opportunities</option><option>Improve follow-up</option><option>Automate operations</option><option>Implement AI safely</option><option>Owner visibility / reporting</option></select></div>
+      </div>
+      <div class="note" style="margin-top:13px">Required fields are intentional: this lets Flowexa send the right follow-up instead of generic marketing.</div>
+      <button class="btn blue glow" style="margin-top:18px">Download My PDF →</button>
+    </form>`;
+  openModalShell();
+}
+function submitPdfLead(e){
+  e.preventDefault();
+  const data=Object.fromEntries(new FormData(e).entries());
+  data.type="pdf-download"; data.resource=pendingPdf; data.page=location.pathname;
+  sendLead(data);
+  const url=PDFS[pendingPdf];
+  closeModal();
+  const a=document.createElement('a');a.href=url;a.download="";document.body.appendChild(a);a.click();a.remove();
+  toast("PDF download started.");
+}
+function sendLead(data){
+  const payload={source:"Flowexa website",...data,createdAt:new Date().toISOString()};
+  localStorage.setItem('flowexa_lead_'+Date.now(),JSON.stringify(payload));
+  if(CONFIG.SHEET_WEBHOOK_URL){
+    fetch(CONFIG.SHEET_WEBHOOK_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}).catch(()=>{});
+  }
+}
+function openModal(type){
+  const c=document.getElementById('modalcontent');
+  c.innerHTML='<button class="close" onclick="closeModal()">×</button>';
+  if(type==='pilot') c.innerHTML+=`
+    <div class="eyebrow">Free Pilot</div><h2>Apply for the Flowexa Free Pilot.</h2>
+    <p class="small">We are not looking for a perfect business. We are looking for a real process where fixing one bottleneck could create meaningful value.</p>
+    <form onsubmit="submitLead(event,'pilot')"><div class="formgrid">
+      <div class="field"><label>First name *</label><input name="firstName" required></div>
+      <div class="field"><label>Last name *</label><input name="lastName" required></div>
+      <div class="field"><label>Business email *</label><input name="email" type="email" required></div>
+      <div class="field"><label>Company *</label><input name="company" required></div>
+      <div class="field"><label>Website *</label><input name="website" type="url" placeholder="https://" required></div>
+      <div class="field"><label>Business type *</label><select name="type" required><option value="">Select one</option><option>Roofing</option><option>HVAC</option><option>Plumbing</option><option>Kitchen Remodeling</option><option>Interior Design</option><option>Med Spa</option><option>Other</option></select></div>
+      <div class="field full"><label>What would you most like fixed? *</label><textarea name="challenge" rows="4" required placeholder="Missed calls, slow response, estimates, follow-up, booking, etc."></textarea></div>
+    </div><button class="btn blue glow" style="margin-top:18px">Submit Pilot Application →</button></form>`;
+  if(type==='playbook') c.innerHTML+=playbookHTML();
+  if(type==='recovery') c.innerHTML+=recoveryHTML();
+  if(type==='followup') c.innerHTML+=followupHTML();
+  if(type==='receptionist') c.innerHTML+=receptionistHTML();
+  if(type==='audit'){
+    auditAnswers=[];
+    c.innerHTML+=auditShell();
+  }
+  if(type==='calcLead') c.innerHTML+=`
+    <div class="eyebrow">Revenue Leak Calculator™</div>
+    <h2>Send this analysis to me.</h2>
+    <p class="small">We'll save the calculator inputs with your contact details so Flowexa can follow up with context instead of starting from zero.</p>
+    <form onsubmit="submitCalcLead(event)"><div class="formgrid">
+      <div class="field"><label>Full name *</label><input name="name" required></div>
+      <div class="field"><label>Business email *</label><input name="email" type="email" required></div>
+      <div class="field"><label>Business name *</label><input name="company" required></div>
+      <div class="field"><label>Website *</label><input name="website" type="url" placeholder="https://" required></div>
+    </div><div class="note" style="margin-top:13px">Your calculator assumptions will be attached to the lead record automatically.</div>
+    <button class="btn blue glow" style="margin-top:18px">Save My Analysis →</button></form>`;
+  if(type==='mapform') c.innerHTML+=`
+    <div class="eyebrow">Revenue Recovery Map™</div>
+    <h2>Give me the basics and map the biggest recovery opportunity.</h2>
+    <p class="small">Required fields keep the map useful. In the production version, this submission should go to your lead database.</p>
+    <form onsubmit="submitLead(event,'recovery-map')"><div class="formgrid">
+      <div class="field"><label>Full name *</label><input name="name" required></div>
+      <div class="field"><label>Business email *</label><input name="email" type="email" required></div>
+      <div class="field"><label>Business name *</label><input name="company" required></div>
+      <div class="field"><label>Website *</label><input name="website" type="url" placeholder="https://" required></div>
+      <div class="field"><label>Business type *</label><select name="type" required><option value="">Select one</option><option>Roofing</option><option>HVAC</option><option>Plumbing</option><option>Kitchen Remodeling</option><option>Interior Design</option><option>Med Spa</option><option>Other Home Service</option></select></div>
+      <div class="field"><label>Biggest suspected leak *</label><select name="leak" required><option value="">Select one</option><option>Missed calls</option><option>Slow lead response</option><option>Appointment no-shows</option><option>Unsold estimates</option><option>Old leads</option><option>Past customers</option><option>Not sure</option></select></div>
+      <div class="field full"><label>What happens after a new lead contacts you? *</label><textarea name="process" rows="4" required placeholder="Briefly describe what happens from first contact to booked job."></textarea></div>
+    </div>
+    <button class="btn blue glow" style="margin-top:18px">Request My Recovery Map →</button></form>`;
+
+  openModalShell();
+  if(type==='audit') renderAudit();
+}
+
+function playbookHTML(){return `
+<div class="eyebrow">The Booked Job Playbook™</div>
+<h2>If I had to build a home-service business from zero today.</h2>
+<div class="resource-copy">
+<p>This is the order I would follow: <strong>market → offer → demand → response → sales → delivery → retention → measurement → automation.</strong> I would not start by buying software.</p>
+<div class="principle"><strong>Rule #1:</strong> Never automate a process you have not first made understandable and measurable.</div>
+
+<h3>Phase 1 — Pick a market where one job matters</h3>
+<ol>
+<li>Choose a service with meaningful ticket size and clear customer pain.</li>
+<li>Start with a tight service area so travel, scheduling and local reputation are manageable.</li>
+<li>Define the customer you want: property type, project size, urgency and buying trigger.</li>
+<li>Write down the jobs you will <em>not</em> take. Margin and capacity matter more than vanity lead volume.</li>
+</ol>
+
+<h3>Phase 2 — Build an offer people can understand in 10 seconds</h3>
+<ul>
+<li>Make the outcome obvious: what problem is solved, for whom, and what happens next.</li>
+<li>Reduce uncertainty with proof, process transparency, warranty/guarantee language where legitimate, and clear expectations.</li>
+<li>Give the prospect one obvious next step: call, estimate, inspection or consultation.</li>
+</ul>
+
+<h3>Phase 3 — Build the demand engine</h3>
+<p>Pick a small number of channels and learn them deeply. Local search, referrals, paid lead sources, partnerships and outbound can all work; the mistake is adding channels before you know your conversion economics.</p>
+<div class="scorecard"><div><strong>Track</strong><span>Leads by source</span></div><div><strong>Track</strong><span>Booked appointments</span></div><div><strong>Track</strong><span>Won revenue</span></div></div>
+
+<h3>Phase 4 — Win the speed-to-lead battle</h3>
+<ol>
+<li>Decide who owns every new inquiry.</li>
+<li>Set a response standard.</li>
+<li>Use an immediate acknowledgement when a human cannot respond.</li>
+<li>Recover missed calls instead of treating them as dead.</li>
+<li>Qualify before spending expensive sales time.</li>
+</ol>
+
+<h3>Phase 5 — Turn estimates into decisions</h3>
+<p>Every estimate should have a defined next step. Explain the recommendation, answer objections, give a realistic decision path, then follow up systematically. “Sent estimate” is not the same thing as “lost lead.”</p>
+
+<h3>Phase 6 — Build the follow-up machine before the AI machine</h3>
+<ul>
+<li>New inquiry sequence.</li><li>Appointment reminder sequence.</li><li>Estimate follow-up sequence.</li><li>No-decision sequence.</li><li>Past-customer reactivation sequence.</li>
+</ul>
+
+<h3>Phase 7 — Protect delivery and reputation</h3>
+<p>Top earners do not only sell well. They schedule capacity, communicate delays, document the work, collect reviews, ask for referrals and make the next purchase easy.</p>
+
+<h3>Phase 8 — Know your numbers</h3>
+<p>At minimum, know leads → appointments → estimates → wins → revenue → gross margin. Then ask: <strong>where does the largest drop happen?</strong> Fix the largest economic bottleneck first.</p>
+
+<h3>Phase 9 — Only now add AI and automation</h3>
+<ol>
+<li>Automate repetitive acknowledgement and routing.</li>
+<li>Automate data movement between tools.</li>
+<li>Use AI for structured qualification and information gathering.</li>
+<li>Use AI for follow-up where the business rules are clear.</li>
+<li>Use AI reception only after you know the correct scripts, escalation rules and booking logic.</li>
+<li>Keep humans in the loop for pricing exceptions, angry customers, safety issues, unusual jobs and anything outside the system's authority.</li>
+</ol>
+
+<div class="principle"><strong>The end state:</strong> a business where demand is captured, serious prospects are handled quickly, sales opportunities are followed up, delivery is consistent, and the owner can see the numbers without personally chasing every detail.</div>
+
+<h3>90-day order</h3>
+<p><strong>Days 1–30:</strong> offer, lead sources, response process, qualification and basic tracking.<br>
+<strong>Days 31–60:</strong> estimate follow-up, appointment reminders, reactivation and reporting.<br>
+<strong>Days 61–90:</strong> automate the proven workflows, add controlled AI and remove repetitive owner work.</p>
+
+<div style="margin-top:25px"><button class="btn blue glow pulse" onclick="closeModal();openCal()">Want help applying this to your business? Book a Strategy Call →</button></div>
+</div>`}
+
+function recoveryHTML(){return `
+<div class="eyebrow">Revenue Recovery Map™</div>
+<h2>Find the money already inside the business before buying more leads.</h2>
+<div class="resource-copy">
+<p>The fastest revenue opportunity is often not another lead source. It is the demand you already paid for but failed to convert, follow up with or reactivate.</p>
+<h3>Map the journey</h3>
+<ol>
+<li><strong>New lead:</strong> How many inquiries arrive each month?</li>
+<li><strong>Response:</strong> How many get a response quickly enough to matter?</li>
+<li><strong>Qualification:</strong> How many are actually a fit?</li>
+<li><strong>Appointment:</strong> How many qualified leads book?</li>
+<li><strong>Show:</strong> How many appointments happen?</li>
+<li><strong>Estimate:</strong> How many receive a clear proposal and next step?</li>
+<li><strong>Decision:</strong> How many buy?</li>
+<li><strong>Delivery:</strong> How many become reviews, referrals or repeat customers?</li>
+</ol>
+
+<h3>The eight recovery buckets</h3>
+<div class="scorecard">
+<div><strong>Missed calls</strong><span>Recover calls that already happened.</span></div>
+<div><strong>Slow leads</strong><span>Reduce response delay.</span></div>
+<div><strong>No-shows</strong><span>Confirm and recover appointments.</span></div>
+<div><strong>Unsold estimates</strong><span>Follow up before intent disappears.</span></div>
+<div><strong>No-decisions</strong><span>Give prospects a legitimate next step.</span></div>
+<div><strong>Dormant leads</strong><span>Revisit old demand where appropriate.</span></div>
+<div><strong>Past customers</strong><span>Find legitimate repeat work.</span></div>
+<div><strong>Referrals</strong><span>Systematize the ask after a good outcome.</span></div>
+</div>
+
+<h3>How I'd prioritize</h3>
+<p>Estimate <strong>volume × conversion gap × average job value</strong>. A small improvement in a high-ticket stage can be worth more than a large improvement in a low-value stage.</p>
+<div class="principle"><strong>Example:</strong> If 40 qualified estimates are sitting untouched and the average job is $5,000, the first question is not “How do we get more leads?” It is “Why are these 40 opportunities not being worked correctly?”</div>
+
+<h3>The 7-day recovery sprint</h3>
+<ol>
+<li>Export recent leads and estimates.</li>
+<li>Separate open, lost, no-response and no-decision opportunities.</li>
+<li>Call the highest-value open opportunities first.</li>
+<li>Start a structured follow-up sequence for the remainder.</li>
+<li>Review every missed-call process.</li>
+<li>Reactivate a small, relevant group of past customers.</li>
+<li>Measure recovered appointments and revenue, not just messages sent.</li>
+</ol>
+
+<h3>What to automate</h3>
+<p>Data collection, reminders, task creation, status changes, simple acknowledgements and reporting are strong automation candidates. Pricing disputes, complaints, unusual project scope and safety-sensitive issues should remain human-controlled.</p>
+
+<div style="margin-top:25px"><button class="btn blue glow pulse" onclick="closeModal();openModal('mapform')">Build My Revenue Recovery Map →</button></div>
+</div>`}
+
+function followupHTML(){return `
+<div class="eyebrow">Lead Follow-Up Sequence™</div>
+<h2>Follow up like a disciplined sales operation — not like a spam bot.</h2>
+<div class="resource-copy">
+<p>The sequence changes by stage. A homeowner who just requested an estimate should not receive the same message as someone who ignored a proposal for three weeks.</p>
+<h3>Sequence A — New inquiry that has not booked</h3>
+<ol>
+<li><strong>Immediately:</strong> confirm receipt and make the next step obvious.</li>
+<li><strong>Same day:</strong> answer the likely question or ask for the missing qualification detail.</li>
+<li><strong>Day 2:</strong> short check-in; remove friction.</li>
+<li><strong>Day 4–5:</strong> offer a concrete scheduling option.</li>
+<li><strong>Day 8–10:</strong> final active follow-up, then move to a lower-frequency nurture state.</li>
+</ol>
+
+<h3>Sequence B — Estimate sent, no decision</h3>
+<ol>
+<li><strong>24 hours:</strong> confirm they received it.</li>
+<li><strong>Day 3:</strong> ask whether the project, scope or timing needs clarification.</li>
+<li><strong>Day 7:</strong> surface the next decision: move forward, revise scope or revisit timing.</li>
+<li><strong>Day 14:</strong> close the active loop politely.</li>
+<li><strong>30–45 days:</strong> only if relevant, re-open the conversation based on season, project timing or a legitimate reason.</li>
+</ol>
+
+<h3>Sequence C — Dormant customer</h3>
+<p>Start from a real reason to contact them: seasonal maintenance, a related service, a warranty check, a legitimate upgrade opportunity or a useful reminder. Do not manufacture urgency.</p>
+
+<h3>The rules that make this work</h3>
+<ul>
+<li>Every message should have one job.</li>
+<li>Do not repeat the same “just following up” message five times.</li>
+<li>Stop when the prospect asks you to stop.</li>
+<li>Escalate replies to a human when intent, emotion or complexity changes.</li>
+<li>Use automation to preserve consistency, not to hide bad sales behavior.</li>
+</ul>
+
+<h3>Where AI helps</h3>
+<p>AI can classify intent, summarize replies, identify missing information, draft a response within approved boundaries and create a task for a salesperson. The business should still define the rules before AI is given authority.</p>
+
+<div style="margin-top:25px"><button class="btn blue glow pulse" onclick="closeModal();openCal()">Want this built into your process? Book a Strategy Call →</button></div>
+</div>`}
+
+function receptionistHTML(){return `
+<div class="eyebrow">AI Front Desk Blueprint™</div>
+<h2>Design the receptionist around business rules — not a chatbot prompt.</h2>
+<div class="resource-copy">
+<p>An AI receptionist is valuable when it reliably handles predictable work and knows when to stop. It should not pretend to be a human expert outside its authority.</p>
+<h3>1. Define the job</h3>
+<ul><li>Answer common questions from approved information.</li><li>Capture service, location, urgency and contact details.</li><li>Check basic service-area fit.</li><li>Route qualified inquiries toward booking.</li><li>Create a clean handoff when a human is required.</li></ul>
+
+<h3>2. Give it a knowledge boundary</h3>
+<p>Services offered, service area, hours, booking rules, emergency policy, common questions, cancellation rules and approved language. If the answer is not in the knowledge base, the system should say it needs a human rather than invent one.</p>
+
+<h3>3. Define escalation triggers</h3>
+<ul><li>Angry or distressed customer</li><li>Safety or emergency issue</li><li>Pricing exception or negotiation</li><li>Complex project scope</li><li>Legal/insurance dispute</li><li>Customer explicitly requests a person</li></ul>
+
+<h3>4. Define qualification</h3>
+<p>Ask only what the business actually needs to decide the next step: service type, location, urgency, property/project basics, timing and contact information.</p>
+
+<h3>5. Define booking</h3>
+<p>Only offer appointments the business actually wants filled. Protect buffers, travel constraints, capacity and special requirements.</p>
+
+<h3>6. Measure it</h3>
+<div class="scorecard"><div><strong>Containment</strong><span>How many conversations are resolved?</span></div><div><strong>Qualified</strong><span>How many become real opportunities?</span></div><div><strong>Booked</strong><span>How many turn into appointments?</span></div></div>
+
+<div class="principle"><strong>Best use of AI:</strong> remove repetitive work while making the human handoff cleaner — not eliminate humans from situations that require judgment.</div>
+
+<div style="margin-top:25px"><button class="btn blue glow pulse" onclick="closeModal();openCal()">Want an AI front desk designed for your process? Book a Strategy Call →</button></div>
+</div>`}
+
+function auditShell(){return `<div class="eyebrow">Booked Job Score™</div><h2>Find your biggest lead-to-booking gaps in about a minute.</h2><p class="small">Eight questions. No long form. Your result is directional and designed to show where we'd investigate first.</p><div id="auditapp" class="quiz"></div>`}
+
+const qs=[
+['How are missed calls handled?',['Someone calls back manually','Automated text','Receptionist handles it','AI handles it','Not sure']],
+['How quickly does someone respond to a new lead?',['Immediately','Within 5 minutes','Within an hour','Several hours','Sometimes next day']],
+['How are appointments booked?',['Phone/manual','Website booking','Staff books them','Automated system','AI books them']],
+['What happens when a lead does not book?',['Manual follow-up','Automated follow-up','AI follow-up','Inconsistent follow-up','Not sure']],
+['Do you follow up with past customers?',['Yes, systematically','Sometimes','No','Not sure']],
+['How do you track leads and appointments?',['CRM','Spreadsheet','Service software','Multiple systems','Mostly manual']],
+['How do you monitor lead performance?',['Dashboard/reporting','CRM reports','Spreadsheet','Manually','We do not really track it']],
+['How mature is your automation?',['Little/no automation','Some automations','Several systems','Highly automated','Not sure']]
+];
+let auditAnswers=[];
+function renderAudit(){
+  const app=document.getElementById('auditapp'); const i=auditAnswers.length;
+  if(i>=qs.length){showAuditLeadGate();return}
+  const q=qs[i];
+  app.innerHTML=`<h3>${q[0]}</h3><div class="progress"><div class="bar" style="width:${((i+1)/qs.length)*100}%"></div></div><div class="small">Question ${i+1} of ${qs.length}</div><div class="answers" style="margin-top:16px">${q[1].map((x,n)=>`<button class="answer" onclick="answerAudit(${n})">${x}</button>`).join('')}</div>`;
+}
+function answerAudit(n){auditAnswers.push(n);renderAudit()}
+function showAuditLeadGate(){
+  const app=document.getElementById('auditapp');
+  app.innerHTML=`<div class="eyebrow">Your answers are ready</div><h3>Where should we send your result?</h3><p class="small">Required so Flowexa can follow up with the exact gap you identified.</p>
+  <form onsubmit="submitAuditLead(event)"><div class="formgrid">
+    <div class="field"><label>Full name *</label><input name="name" required></div>
+    <div class="field"><label>Business email *</label><input name="email" type="email" required></div>
+    <div class="field"><label>Business name *</label><input name="company" required></div>
+    <div class="field"><label>Website *</label><input name="website" type="url" placeholder="https://" required></div>
+  </div><button class="btn blue glow" style="margin-top:18px">Show My Booked Job Score →</button></form>`;
+}
+function getAuditResult(){
+  const a=auditAnswers; let gaps=[];
+  if(a[0]===0||a[0]===4)gaps.push(['Missed-call recovery','HIGH']);
+  if(a[1]>=2)gaps.push(['Lead response speed','HIGH']);
+  if(a[2]<=1)gaps.push(['Appointment booking','MEDIUM']);
+  if(a[3]!==1)gaps.push(['Follow-up discipline','HIGH']);
+  if(a[4]===1||a[4]===2||a[4]===3)gaps.push(['Customer reactivation','MEDIUM']);
+  if(a[5]===1||a[5]===4)gaps.push(['Lead visibility','MEDIUM']);
+  if(a[6]>=2)gaps.push(['Owner reporting','MEDIUM']);
+  if(a[7]===0)gaps.push(['Automation foundation','HIGH']);
+  const score=Math.max(35,Math.min(94,92-gaps.length*7-a.filter(x=>x>=2).length*2));
+  return {score,gaps:gaps.slice(0,3)};
+}
+function submitAuditLead(e){
+  e.preventDefault();
+  const data=Object.fromEntries(new FormData(e).entries());
+  const result=getAuditResult();
+  data.type="audit"; data.auditScore=result.score; data.auditAnswers=auditAnswers; data.page=location.pathname;
+  sendLead(data);
+  showAuditResult(result);
+}
+function showAuditResult(result=getAuditResult()){
+  const {score,gaps}=result;
+  document.getElementById('auditapp').innerHTML=`<div class="eyebrow">Your result</div><div class="score-ring">${score}<span style="font-size:23px;color:#7b8797">/100</span></div><p class="small">This score is a directional diagnostic based on your answers. The opportunities below are where I'd investigate first.</p><div class="resultgrid">${gaps.length?gaps.map(g=>`<div class="resultitem"><strong>${g[0]}</strong><div class="status ${g[1]==='HIGH'?'high':'med'}">${g[1]} OPPORTUNITY</div></div>`).join(''):`<div class="resultitem"><strong>Strong foundation</strong><div class="status strong">LOWER PRIORITY</div></div>`}</div><div style="margin-top:22px"><button class="btn blue glow pulse" onclick="closeModal();openCal()">Want the deeper version? Book a Strategy Call →</button></div>`;
+}
+
+function calcLeak(){
+  const m=+document.getElementById('missed').value||0, r=(+document.getElementById('rate').value||0)/100, j=+document.getElementById('job').value||0;
+  const rev=m*r*j;
+  const intensity=Math.max(12,Math.min(100,Math.round((rev/Math.max(1,100000))*100)));
+  document.getElementById('calcresult').innerHTML=`<div class="eyebrow" style="color:#dc2626">Estimated revenue currently at risk</div><div class="big-number">$${Math.round(rev).toLocaleString()}</div><div class="leak-bar"><span style="width:${intensity}%"></span></div><p class="small"><strong>This is an estimate of revenue potentially leaking from unanswered demand.</strong> ${m.toLocaleString()} missed calls × ${Math.round(r*100)}% booking assumption × $${j.toLocaleString()} average job value.</p><div class="actions" style="margin-top:12px"><button class="btn outline" onclick="openModal('calcLead')">Email Me This Analysis →</button><button class="btn outline" onclick="openModal('audit')">Find the Bigger Leaks →</button></div>`;
+}
+
+function submitCalcLead(e){
+  e.preventDefault();
+  const data=Object.fromEntries(new FormData(e).entries());
+  data.type="calculator";
+  data.missedCalls=document.getElementById('missed')?.value||"";
+  data.bookingRate=document.getElementById('rate')?.value||"";
+  data.averageJobValue=document.getElementById('job')?.value||"";
+  data.page=location.pathname;
+  sendLead(data);
+  closeModal();
+  toast("Analysis captured. Your inputs are saved for follow-up.");
+}
+function submitLead(e,type){
+  e.preventDefault();
+  const data=Object.fromEntries(new FormData(e).entries());
+  data.type=type; data.page=location.pathname;
+  sendLead(data);
+  closeModal();
+  toast(type==='pilot'?'Pilot application captured.':'Request captured.');
+}
+
+function closeModal(){
+  const m=document.getElementById('modal');m.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');
+}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2600)}
+</script>
+</body>
+</html>
