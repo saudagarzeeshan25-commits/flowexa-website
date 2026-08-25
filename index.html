@@ -114,6 +114,7 @@ a{text-decoration:none;color:inherit}
 .resultgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.resultitem{border:1px solid var(--line);border-radius:15px;padding:18px;background:#fff}.status{font-size:11px;font-weight:850}.high{color:#dc2626}.med{color:#b45309}.strong{color:#059669}
 .output{background:#07111f;color:#eaf1fb;border-radius:18px;padding:22px;white-space:pre-wrap;min-height:300px;font-size:13px}
 .toast{position:fixed;right:22px;bottom:22px;background:#07111f;color:#fff;padding:13px 16px;border-radius:12px;display:none;z-index:100}.toast.show{display:block}
+.scroll-progress{position:fixed;top:0;left:0;width:0;height:4px;background:var(--grad);z-index:9999;transition:width .08s linear;pointer-events:none;box-shadow:0 0 12px rgba(29,104,242,.22)}
 
 .auto-pill{font-style:normal;font-size:8px;letter-spacing:.08em;color:#fff;background:linear-gradient(110deg,#06c9df,#1d68f2,#7a3ff0);padding:4px 6px;border-radius:999px;vertical-align:middle;box-shadow:0 0 16px rgba(29,104,242,.28);animation:autoGlow 2.5s ease-in-out infinite}
 @keyframes autoGlow{0%,100%{box-shadow:0 0 8px rgba(29,104,242,.12)}50%{box-shadow:0 0 20px rgba(29,104,242,.38),0 0 28px rgba(122,63,240,.16)}}
@@ -133,6 +134,8 @@ a{text-decoration:none;color:inherit}
 </style>
 </head>
 <body>
+
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
 <header class="nav">
   <div class="container navin">
@@ -256,29 +259,33 @@ a{text-decoration:none;color:inherit}
         <p>A step-by-step operating system for tightening an already-growing home-service business — from bottleneck diagnosis to follow-up, recovery, measurement and finally AI.</p>
         <div class="resource-cta"><button class="btn blue glow" onclick="openPdfGate('playbook')">Download the PDF →</button></div>
       </article>
+
+      <article class="resource featured">
+        <span class="tag">60-SECOND DIAGNOSTIC · PRIORITY</span>
+        <h3>Booked Job Score™</h3>
+        <p>Eight quick questions. Get a directional diagnosis of the biggest lead-to-booking gaps and the area I'd investigate first.</p>
+        <div class="resource-cta"><button class="btn blue glow" onclick="openModal('audit')">Take the 60-Second Score →</button></div>
+      </article>
+
       <article class="resource">
         <span class="tag">REVENUE DIAGNOSTIC</span>
         <h3>Revenue Recovery Map™</h3>
         <p>Find the money hiding in missed calls, unsold estimates, no-shows, dormant leads and past customers before spending more on acquisition.</p>
         <div class="resource-cta"><button class="btn outline" onclick="openPdfGate('recovery')">Download the PDF →</button></div>
       </article>
+
       <article class="resource">
         <span class="tag">FOLLOW-UP ENGINE</span>
         <h3>Lead Follow-Up Sequence™</h3>
         <p>A stage-based follow-up operating system for serious opportunities — not a pile of generic “just checking in” messages.</p>
         <div class="resource-cta"><button class="btn outline" onclick="openPdfGate('followup')">Download the PDF →</button></div>
       </article>
+
       <article class="resource">
         <span class="tag">AI IMPLEMENTATION</span>
         <h3>AI Front Desk Blueprint™</h3>
         <p>How to decide what AI should handle, what it should never handle, and how to build clean human escalation before giving AI authority.</p>
         <div class="resource-cta"><button class="btn outline" onclick="openPdfGate('receptionist')">Download the PDF →</button></div>
-      </article>
-      <article class="resource">
-        <span class="tag">60-SECOND DIAGNOSTIC</span>
-        <h3>Booked Job Score™</h3>
-        <p>Eight quick questions. Get a directional diagnosis of the biggest lead-to-booking gaps and the area I'd investigate first.</p>
-        <div class="resource-cta"><button class="btn outline" onclick="openModal('audit')">Take the 60-Second Score →</button></div>
       </article>
     </div>
   </div>
@@ -319,7 +326,7 @@ a{text-decoration:none;color:inherit}
       <p>Every required field is intentional. It gives us enough context to avoid sending you a generic answer.</p>
     </div>
     <div class="card">
-      <form onsubmit="submitLead(event,'contact')">
+      <form id="contactForm" onsubmit="submitLead(event,'contact')">
         <div class="formgrid">
           <div class="field"><label>Full name *</label><input name="name" required></div>
           <div class="field"><label>Business email *</label><input name="email" type="email" required></div>
@@ -329,7 +336,8 @@ a{text-decoration:none;color:inherit}
           <div class="field"><label>What needs improvement? *</label><select name="challenge" required><option value="">Select one</option><option>Missed calls / slow response</option><option>Lead qualification</option><option>Appointment booking</option><option>Follow-up</option><option>Old lead reactivation</option><option>Reporting / visibility</option><option>Other</option></select></div>
           <div class="field full"><label>Tell us what is happening today *</label><textarea name="details" rows="5" required placeholder="What happens from the moment a lead contacts you until the job is booked?"></textarea></div>
         </div>
-        <button class="btn blue glow" style="margin-top:18px">Send Request →</button>
+        <button class="btn blue glow" style="margin-top:18px" type="submit">Send Request →</button>
+        <div id="contactStatus" class="small" aria-live="polite" style="margin-top:12px"></div>
       </form>
     </div>
   </div>
@@ -785,19 +793,85 @@ async function submitCalcLead(e){
 }
 async function submitLead(e,type){
   e.preventDefault();
-  const data=Object.fromEntries(new FormData(e).entries());
-  data.type=type; data.page=location.pathname;
+
+  const form=e.target;
+  const data=Object.fromEntries(new FormData(form).entries());
+  data.type=type;
+  data.page=location.pathname;
+
+  const status=form.querySelector('#contactStatus') || form.querySelector('.small[aria-live="polite"]');
+
+  if(status) {
+    status.style.color="#607087";
+    status.textContent="Sending your request…";
+  }
+
   const ok=await sendLead(data);
-  closeModal();
-  toast(ok ? (type==='pilot'?'Pilot application captured.':'Request captured.') : "Saved locally. Please check your connection and try again.");
+
+  if(ok){
+    if(status){
+      status.style.color="#059669";
+      status.textContent=type==="pilot"
+        ? "Request received. Your pilot application has been submitted."
+        : "Request received. We'll review the information and follow up.";
+    }
+
+    toast(type==="pilot" ? "Pilot application submitted." : "Request submitted.");
+
+    if(type==="contact"){
+      form.reset();
+    } else {
+      setTimeout(()=>closeModal(),900);
+    }
+  }else{
+    if(status){
+      status.style.color="#dc2626";
+      status.textContent="We couldn't submit the request. Please try again or book a strategy call directly.";
+    }
+    toast("Submission failed. Please try again.");
+  }
 }
 
 function closeModal(){
-  const m=document.getElementById('modal');m.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');
+  const m=document.getElementById('modal');
+  if(!m) return;
+  m.classList.remove('open');
+  m.setAttribute('aria-hidden','true');
+  document.body.classList.remove('modal-open');
 }
-document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
-function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2600)}
+
+const modal=document.getElementById('modal');
+if(modal){
+  modal.addEventListener('click',e=>{
+    if(e.target.id==='modal') closeModal();
+  });
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeModal();
+});
+
+function updateScrollProgress(){
+  const bar=document.getElementById('scrollProgress');
+  if(!bar) return;
+
+  const max=document.documentElement.scrollHeight-window.innerHeight;
+  const value=max>0 ? (window.scrollY/max)*100 : 0;
+  bar.style.width=Math.min(100,Math.max(0,value))+'%';
+}
+
+window.addEventListener('scroll',updateScrollProgress,{passive:true});
+window.addEventListener('resize',updateScrollProgress);
+updateScrollProgress();
+
+function toast(t){
+  const x=document.getElementById('toast');
+  if(!x) return;
+  x.textContent=t;
+  x.classList.add('show');
+  clearTimeout(window.__flowexaToastTimer);
+  window.__flowexaToastTimer=setTimeout(()=>x.classList.remove('show'),2600);
+}
 </script>
 </body>
 </html>
