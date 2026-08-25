@@ -1,6 +1,13 @@
-const ENDPOINT = "https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec";
+const ENDPOINT =
+  "https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec";
 
-const CAL_LINK = "https://cal.com/saudagar-zeeshan-sttyxl/30min";
+const CAL_LINK =
+  "https://cal.com/saudagar-zeeshan-sttyxl/30min";
+
+
+/* =========================================================
+   RESOURCE DATA
+   ========================================================= */
 
 const RESOURCE_META = {
   playbook: {
@@ -37,39 +44,78 @@ const RESOURCE_META = {
 };
 
 
+/* =========================================================
+   MOBILE MENU
+   ========================================================= */
+
 function toggleMenu() {
-  document.getElementById("navLinks").classList.toggle("open");
+  const navLinks = document.getElementById("navLinks");
+
+  if (navLinks) {
+    navLinks.classList.toggle("open");
+  }
 }
 
 
-function closeModal() {
-  const m = document.getElementById("modal");
+/* =========================================================
+   MODAL
+   ========================================================= */
 
-  m.classList.remove("open");
-  m.setAttribute("aria-hidden", "true");
+function closeModal() {
+  const modal = document.getElementById("modal");
+
+  if (!modal) {
+    return;
+  }
+
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+
+  document.body.classList.remove("modal-open");
 }
 
 
 function openModal(html) {
-  const m = document.getElementById("modal");
+  const modal = document.getElementById("modal");
+  const modalContent = document.getElementById("modalContent");
 
-  document.getElementById("modalContent").innerHTML = html;
+  if (!modal || !modalContent) {
+    console.error("Modal elements were not found.");
+    return;
+  }
 
-  m.classList.add("open");
-  m.setAttribute("aria-hidden", "false");
+  modalContent.innerHTML = html;
+
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+
+  document.body.classList.add("modal-open");
 }
 
 
+/* =========================================================
+   RESOURCE MODAL
+   ========================================================= */
+
 function openResource(key) {
-  const r = RESOURCE_META[key];
+  const resource = RESOURCE_META[key];
+
+  if (!resource) {
+    console.error("Unknown resource:", key);
+    return;
+  }
 
   openModal(`
-    <div class="eyebrow">${r.kicker}</div>
+    <div class="eyebrow">
+      ${resource.kicker}
+    </div>
 
-    <h2>Get the full operating guide.</h2>
+    <h2>
+      Get the full operating guide.
+    </h2>
 
     <p>
-      ${r.description}
+      ${resource.description}
       Enter your details once. The PDF becomes available immediately after submission.
     </p>
 
@@ -136,7 +182,10 @@ function openResource(key) {
           required
           name="businessType"
         >
-          <option value="">Select one</option>
+          <option value="">
+            Select one
+          </option>
+
           <option>Roofing</option>
           <option>HVAC</option>
           <option>Plumbing</option>
@@ -153,12 +202,29 @@ function openResource(key) {
           required
           name="challenge"
         >
-          <option value="">Select one</option>
-          <option>Convert more existing leads</option>
-          <option>Recover missed calls</option>
-          <option>Improve follow-up</option>
-          <option>Book appointments faster</option>
-          <option>Automate operations</option>
+          <option value="">
+            Select one
+          </option>
+
+          <option>
+            Convert more existing leads
+          </option>
+
+          <option>
+            Recover missed calls
+          </option>
+
+          <option>
+            Improve follow-up
+          </option>
+
+          <option>
+            Book appointments faster
+          </option>
+
+          <option>
+            Automate operations
+          </option>
         </select>
       </label>
 
@@ -177,55 +243,87 @@ function openResource(key) {
       <p
         class="form-status wide"
         id="resourceStatus"
+        aria-live="polite"
       ></p>
 
     </form>
   `);
 
-  document
-    .getElementById("resourceForm")
-    .addEventListener("submit", e => submitResource(e, key));
+  const form = document.getElementById("resourceForm");
+
+  if (form) {
+    form.addEventListener("submit", function (event) {
+      submitResource(event, key);
+    });
+  }
 }
 
+
+/* =========================================================
+   SEND LEAD TO GOOGLE APPS SCRIPT
+   ========================================================= */
 
 async function postLead(data) {
   try {
     await fetch(ENDPOINT, {
       method: "POST",
+
+      /*
+       * no-cors is intentional because the Google Apps Script
+       * endpoint is being used as a form receiver.
+       */
       mode: "no-cors",
+
       headers: {
         "Content-Type": "text/plain;charset=utf-8"
       },
+
       body: JSON.stringify(data)
     });
 
+    /*
+     * With no-cors the browser cannot read the response.
+     * If fetch itself did not throw, the request was sent.
+     */
     return true;
 
-  } catch (e) {
-    console.error("Lead submission error:", e);
+  } catch (error) {
+    console.error(
+      "Flowexa lead submission error:",
+      error
+    );
+
     return false;
   }
 }
 
 
-async function submitResource(e, key) {
-  e.preventDefault();
+/* =========================================================
+   RESOURCE SUBMISSION
+   ========================================================= */
 
-  const form = e.target;
+async function submitResource(event, key) {
+  event.preventDefault();
 
-  const status = document.getElementById("resourceStatus");
+  const form = event.target;
+
+  const status =
+    document.getElementById("resourceStatus");
+
+  if (!form || !status) {
+    return;
+  }
 
   const data = Object.fromEntries(
     new FormData(form).entries()
   );
 
-  status.textContent = "Preparing your PDF…";
+  status.textContent =
+    "Sending your information…";
 
   const ok = await postLead(data);
 
-  const r = RESOURCE_META[key];
-
-  status.textContent = "";
+  const resource = RESOURCE_META[key];
 
   if (!ok) {
     status.textContent =
@@ -237,10 +335,12 @@ async function submitResource(e, key) {
   document.getElementById("modalContent").innerHTML = `
     <div class="success">
 
-      <div class="big">✓</div>
+      <div class="big">
+        ✓
+      </div>
 
       <div class="eyebrow">
-        ${r.kicker}
+        ${resource.kicker}
       </div>
 
       <h2>
@@ -253,7 +353,7 @@ async function submitResource(e, key) {
 
       <a
         class="btn btn-primary btn-lg"
-        href="${r.file}"
+        href="${resource.file}"
         download
       >
         Download the PDF →
@@ -278,36 +378,82 @@ async function submitResource(e, key) {
 }
 
 
-const leadForm = document.getElementById("leadForm");
+/* =========================================================
+   MAIN CONTACT / PILOT FORM
+   ========================================================= */
 
-if (leadForm) {
+async function submitLead(event, type) {
+  event.preventDefault();
 
-  leadForm.addEventListener("submit", async e => {
+  const form = event.target;
 
-    e.preventDefault();
+  if (!form) {
+    return;
+  }
 
-    const status = document.getElementById("formStatus");
+  const status =
+    form.querySelector("#contactStatus") ||
+    document.getElementById("contactStatus") ||
+    form.querySelector(".form-status");
 
-    const data = Object.fromEntries(
-      new FormData(e.target).entries()
-    );
+  const data = Object.fromEntries(
+    new FormData(form).entries()
+  );
 
-    status.textContent = "Sending…";
+  data.type = type || "contact";
+  data.page = window.location.pathname;
+  data.source = "Flowexa website";
 
-    const ok = await postLead(data);
+  if (status) {
+    status.textContent =
+      "Sending your request…";
 
-    status.textContent = ok
-      ? "Request received. We'll review the information and follow up."
-      : "Something went wrong. Please try again or book a strategy call directly.";
+    status.style.color = "#607087";
+  }
 
-    if (ok) {
-      e.target.reset();
+  const ok = await postLead(data);
+
+  if (ok) {
+
+    if (status) {
+      status.textContent =
+        type === "pilot"
+          ? "Request received. Your pilot application has been submitted."
+          : "Request received. We'll review the information and follow up.";
+
+      status.style.color = "#059669";
     }
 
-  });
+    showToast(
+      type === "pilot"
+        ? "Pilot application submitted."
+        : "Request received."
+    );
 
+    /*
+     * Reset only after successful submission.
+     */
+    form.reset();
+
+  } else {
+
+    if (status) {
+      status.textContent =
+        "We couldn't submit the request. Please try again or book a strategy call directly.";
+
+      status.style.color = "#dc2626";
+    }
+
+    showToast(
+      "Submission failed. Please try again."
+    );
+  }
 }
 
+
+/* =========================================================
+   REVENUE CALCULATOR
+   ========================================================= */
 
 function calc() {
 
@@ -351,56 +497,177 @@ function calc() {
       )
     ) / 100;
 
-  const loss = calls * rate * avg;
+  const loss =
+    calls * rate * avg;
 
   lossElement.textContent =
-    loss.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0
-    });
+    loss.toLocaleString(
+      "en-US",
+      {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0
+      }
+    );
 }
 
 
-["missedCalls", "avgJob", "bookingRate"].forEach(id => {
+/* =========================================================
+   CALCULATOR LISTENERS
+   ========================================================= */
 
-  const element = document.getElementById(id);
+[
+  "missedCalls",
+  "avgJob",
+  "bookingRate"
+].forEach(function (id) {
+
+  const element =
+    document.getElementById(id);
 
   if (element) {
-    element.addEventListener("input", calc);
+    element.addEventListener(
+      "input",
+      calc
+    );
   }
-
 });
 
 
 calc();
 
 
-window.addEventListener("scroll", () => {
+/* =========================================================
+   SCROLL PROGRESS
+   ========================================================= */
 
+function updateScrollProgress() {
+
+  /*
+   * This ID is used by the fixed scroll-loading line
+   * added to index.html.
+   */
   const progress =
-    document.querySelector(".progress");
+    document.getElementById("scrollProgress");
 
   if (!progress) {
     return;
   }
 
-  const h =
-    document.documentElement.scrollHeight -
-    innerHeight;
+  const documentHeight =
+    document.documentElement.scrollHeight;
 
-  progress.style.width =
-    (h > 0
-      ? (scrollY / h) * 100
-      : 0) + "%";
+  const viewportHeight =
+    window.innerHeight;
 
-});
+  const maxScroll =
+    documentHeight - viewportHeight;
 
-
-document.addEventListener("keydown", e => {
-
-  if (e.key === "Escape") {
-    closeModal();
+  if (maxScroll <= 0) {
+    progress.style.width = "0%";
+    return;
   }
 
-});
+  const percentage =
+    (window.scrollY / maxScroll) * 100;
+
+  progress.style.width =
+    Math.min(
+      100,
+      Math.max(0, percentage)
+    ) + "%";
+}
+
+
+window.addEventListener(
+  "scroll",
+  updateScrollProgress,
+  {
+    passive: true
+  }
+);
+
+window.addEventListener(
+  "resize",
+  updateScrollProgress
+);
+
+updateScrollProgress();
+
+
+/* =========================================================
+   MODAL EVENTS
+   ========================================================= */
+
+document.addEventListener(
+  "keydown",
+  function (event) {
+
+    if (event.key === "Escape") {
+      closeModal();
+    }
+
+  }
+);
+
+
+const modal =
+  document.getElementById("modal");
+
+if (modal) {
+
+  modal.addEventListener(
+    "click",
+    function (event) {
+
+      if (
+        event.target.id === "modal"
+      ) {
+        closeModal();
+      }
+
+    }
+  );
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+let toastTimer = null;
+
+
+function showToast(message) {
+
+  const toast =
+    document.getElementById("toast");
+
+  if (!toast) {
+    return;
+  }
+
+  toast.textContent = message;
+
+  toast.classList.add("show");
+
+  if (toastTimer) {
+    clearTimeout(toastTimer);
+  }
+
+  toastTimer = setTimeout(
+    function () {
+      toast.classList.remove("show");
+    },
+    3000
+  );
+}
+
+
+/*
+ * Keep compatibility with any existing code
+ * that calls toast() directly.
+ */
+function toast(message) {
+  showToast(message);
+}
