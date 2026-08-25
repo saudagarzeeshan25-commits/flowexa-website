@@ -11,9 +11,13 @@
   --shadow:0 24px 70px rgba(7,17,31,.09);
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box
+}
 
-html{scroll-behavior:smooth}
+html{
+  scroll-behavior:smooth
+}
 
 body{
   margin:0;
@@ -23,7 +27,9 @@ body{
   line-height:1.55
 }
 
-body.modal-open{overflow:hidden}
+body.modal-open{
+  overflow:hidden
+}
 
 button,
 input,
@@ -32,7 +38,9 @@ textarea{
   font:inherit
 }
 
-button{cursor:pointer}
+button{
+  cursor:pointer
+}
 
 a{
   text-decoration:none;
@@ -152,6 +160,7 @@ a{
 }
 
 @keyframes glow{
+
   0%,100%{
     box-shadow:
       0 10px 28px rgba(29,104,242,.18),
@@ -164,14 +173,23 @@ a{
       0 0 0 9px rgba(29,104,242,.08),
       0 0 32px rgba(122,63,240,.18)
   }
+
 }
 
 @keyframes float{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-7px)}
+
+  0%,100%{
+    transform:translateY(0)
+  }
+
+  50%{
+    transform:translateY(-7px)
+  }
+
 }
 
 @keyframes rise{
+
   from{
     opacity:0;
     transform:translateY(14px)
@@ -181,6 +199,7 @@ a{
     opacity:1;
     transform:none
   }
+
 }
 
 
@@ -639,7 +658,7 @@ a{
 }
 
 .modalbox{
-  width:min(980px,100%);
+  width:min(860px,100%);
   max-height:91vh;
   overflow:auto;
   background:#fff;
@@ -648,6 +667,22 @@ a{
   box-shadow:0 35px 100px rgba(0,0,0,.24);
   position:relative;
   animation:rise .2s ease-out
+}
+
+.modalbox.wide{
+  width:min(980px,100%)
+}
+
+.close{
+  position:absolute;
+  right:17px;
+  top:16px;
+  width:35px;
+  height:35px;
+  border:0;
+  border-radius:50%;
+  background:#f0f3f7;
+  font-size:18px
 }
 
 .modalbox h2{
@@ -661,18 +696,6 @@ a{
   font-size:20px;
   letter-spacing:-.025em;
   margin:25px 0 8px
-}
-
-.close{
-  position:absolute;
-  right:17px;
-  top:16px;
-  width:35px;
-  height:35px;
-  border:0;
-  border-radius:50%;
-  background:#f0f3f7;
-  font-size:18px
 }
 
 .resource-copy{
@@ -741,14 +764,17 @@ a{
 .cal-inline{
   width:100%;
   height:100%;
-  overflow:auto
+  min-height:650px;
+  overflow:auto;
+  background:#fff
 }
 
 .cal-inline iframe{
-  width:100% !important;
-  height:100% !important;
-  min-height:600px;
-  border:0 !important
+  display:block;
+  width:100%!important;
+  height:100%!important;
+  min-height:620px!important;
+  border:0!important
 }
 
 .cal-loading{
@@ -758,18 +784,30 @@ a{
   justify-content:center;
   padding:40px;
   color:var(--muted);
-  font-size:14px
-}
-
-.cal-error{
-  flex-direction:column;
-  gap:12px;
+  font-size:14px;
   text-align:center
 }
 
-.cal-error a{
-  color:var(--blue);
-  font-weight:800
+.cal-error{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:40px;
+  text-align:center;
+  color:var(--muted)
+}
+
+.cal-error strong{
+  color:var(--ink);
+  font-size:16px
+}
+
+.cal-error p{
+  margin:0;
+  max-width:420px
 }
 
 .cal-actions{
@@ -784,7 +822,7 @@ a{
 
 
 /* =========================================================
-   PDF + RESOURCE FORMS
+   RESOURCE FORM
    ========================================================= */
 
 .resource-form{
@@ -806,8 +844,7 @@ a{
 }
 
 .resource-form input,
-.resource-form select,
-.resource-form textarea{
+.resource-form select{
   display:block;
   width:100%;
   margin-top:7px;
@@ -820,8 +857,7 @@ a{
 }
 
 .resource-form input:focus,
-.resource-form select:focus,
-.resource-form textarea:focus{
+.resource-form select:focus{
   border-color:#4d8cff;
   box-shadow:0 0 0 3px rgba(44,112,255,.08)
 }
@@ -837,48 +873,7 @@ a{
 
 
 /* =========================================================
-   BOOKED JOB SCORE
-   ========================================================= */
-
-.score-form{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
-  margin-top:24px
-}
-
-.score-form label{
-  display:grid;
-  gap:7px;
-  min-width:0;
-  font-size:13px;
-  font-weight:800;
-  line-height:1.4
-}
-
-.score-form select{
-  width:100%;
-  min-height:48px;
-  padding:11px 12px;
-  border:1px solid #d9e1eb;
-  border-radius:11px;
-  outline:none;
-  background:#fff;
-  color:var(--ink)
-}
-
-.score-form select:focus{
-  border-color:var(--blue);
-  box-shadow:0 0 0 3px rgba(29,104,242,.1)
-}
-
-.score-form .wide{
-  grid-column:1/-1
-}
-
-
-/* =========================================================
-   MISC
+   QUIZ
    ========================================================= */
 
 .quiz{
@@ -935,9 +930,17 @@ a{
   font-weight:850
 }
 
-.high{color:#dc2626}
-.med{color:#b45309}
-.strong{color:#059669}
+.high{
+  color:#dc2626
+}
+
+.med{
+  color:#b45309
+}
+
+.strong{
+  color:#059669
+}
 
 .output{
   background:#07111f;
@@ -948,6 +951,11 @@ a{
   min-height:300px;
   font-size:13px
 }
+
+
+/* =========================================================
+   TOAST + PROGRESS
+   ========================================================= */
 
 .toast{
   position:fixed;
@@ -992,6 +1000,7 @@ a{
 }
 
 @keyframes autoGlow{
+
   0%,100%{
     box-shadow:0 0 8px rgba(29,104,242,.12)
   }
@@ -1001,6 +1010,7 @@ a{
       0 0 20px rgba(29,104,242,.38),
       0 0 28px rgba(122,63,240,.16)
   }
+
 }
 
 .leak-result{
@@ -1049,15 +1059,6 @@ a{
 .pdf-card span{
   font-size:12px;
   color:var(--muted)
-}
-
-.modalbox .actions{
-  margin-top:18px
-}
-
-.modalbox .actions .btn,
-.modalbox .actions a{
-  margin-top:0
 }
 
 
@@ -1115,20 +1116,22 @@ a{
   .step:nth-last-child(-n+2){
     border-bottom:0
   }
+
 }
+
 
 @media(max-width:760px){
 
-  .score-form{
-    grid-template-columns:1fr
-  }
-
-  .score-form .wide{
-    grid-column:auto
-  }
-
   .cal-wrap{
     height:620px
+  }
+
+  .cal-inline{
+    min-height:620px
+  }
+
+  .cal-inline iframe{
+    min-height:600px!important
   }
 
   .cal-actions{
@@ -1138,7 +1141,9 @@ a{
   .cal-actions .btn{
     width:100%
   }
+
 }
+
 
 @media(max-width:600px){
 
@@ -1165,12 +1170,12 @@ a{
   }
 
   .step{
-    border-right:0 !important;
-    border-bottom:1px solid var(--line) !important
+    border-right:0!important;
+    border-bottom:1px solid var(--line)!important
   }
 
   .step:last-child{
-    border-bottom:0 !important
+    border-bottom:0!important
   }
 
   .formgrid{
@@ -1198,6 +1203,26 @@ a{
     font-size:30px
   }
 
+  .cal-wrap{
+    height:640px
+  }
+
+  .cal-inline{
+    min-height:640px
+  }
+
+  .cal-inline iframe{
+    min-height:620px!important
+  }
+
+  .cal-actions{
+    justify-content:stretch
+  }
+
+  .cal-actions .btn{
+    width:100%
+  }
+
   .resource-form{
     grid-template-columns:1fr
   }
@@ -1206,15 +1231,4 @@ a{
     grid-column:auto
   }
 
-  .score-form{
-    gap:14px
-  }
-
-  .score-form label{
-    font-size:12px
-  }
-
-  .score-form select{
-    min-height:46px
-  }
 }
