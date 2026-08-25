@@ -1,3 +1,8 @@
+/* =========================================================
+   FLOWEXA WEBSITE
+   Interactions + Google Sheets Integration
+   ========================================================= */
+
 const ENDPOINT =
   "https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec";
 
@@ -10,28 +15,19 @@ const CAL_LINK =
    ========================================================= */
 
 const RESOURCE_META = {
-
   playbook: {
     title: "The Booked Job Playbook™",
     kicker: "FREE PDF — THE BOOKED JOB PLAYBOOK™",
     description:
-      "The operating framework for an established home-service business that already has demand and wants to turn more of it into booked, completed and collected jobs.",
+      "A step-by-step operating system for tightening an already-growing home-service business.",
     file: "booked-job-playbook.pdf"
-  },
-
-  score: {
-    title: "Booked Job Score™",
-    kicker: "60-SECOND DIAGNOSTIC — BOOKED JOB SCORE™",
-    description:
-      "Eight quick questions to identify the biggest lead-to-booking gaps in your current process.",
-    file: null
   },
 
   recovery: {
     title: "Revenue Recovery Map™",
     kicker: "FREE PDF — REVENUE RECOVERY MAP™",
     description:
-      "A practical map for finding money already sitting in missed calls, stale estimates, cancellations and other pipeline leaks.",
+      "A practical map for finding money already sitting in missed calls, unsold estimates, no-shows and dormant opportunities.",
     file: "revenue-recovery-map.pdf"
   },
 
@@ -39,100 +35,528 @@ const RESOURCE_META = {
     title: "Lead Follow-Up Sequence™",
     kicker: "FREE PDF — LEAD FOLLOW-UP SEQUENCE™",
     description:
-      "A decision-based follow-up framework for leads that did not book on the first interaction.",
+      "A stage-based follow-up operating system for serious opportunities.",
     file: "lead-follow-up-sequence.pdf"
   },
 
   receptionist: {
-    title: "AI Receptionist Blueprint™",
-    kicker: "FREE PDF — AI RECEPTIONIST BLUEPRINT™",
+    title: "AI Front Desk Blueprint™",
+    kicker: "FREE PDF — AI FRONT DESK BLUEPRINT™",
     description:
-      "A practical guide to where AI can earn money in an established home-service operation—and where human judgment still matters.",
+      "A practical guide to where AI can handle work and where human escalation still matters.",
     file: "ai-receptionist-blueprint.pdf"
   }
-
 };
-
-
-/* =========================================================
-   MOBILE MENU
-   ========================================================= */
-
-function toggleMenu() {
-
-  const nav =
-    document.getElementById("navLinks");
-
-  if (!nav) return;
-
-  nav.classList.toggle("open");
-
-}
 
 
 /* =========================================================
    MODAL
    ========================================================= */
 
-function closeModal() {
+function getModal() {
+  return document.getElementById("modal");
+}
 
-  const modal =
-    document.getElementById("modal");
+function getModalContent() {
+  return document.getElementById("modalContent");
+}
+
+function setModalContent(html) {
+  const content = getModalContent();
+
+  if (!content) {
+    console.error("modalContent was not found.");
+    return;
+  }
+
+  content.innerHTML = `
+    <button
+      class="close"
+      onclick="closeModal()"
+      aria-label="Close"
+      type="button"
+    >×</button>
+
+    ${html}
+  `;
+}
+
+function showModal(html) {
+  const modal = getModal();
+
+  if (!modal) {
+    console.error("modal was not found.");
+    return;
+  }
+
+  setModalContent(html);
+
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+
+  document.body.classList.add("modal-open");
+}
+
+function closeModal() {
+  const modal = getModal();
 
   if (!modal) return;
 
   modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
 
-  modal.setAttribute(
-    "aria-hidden",
-    "true"
-  );
-
+  document.body.classList.remove("modal-open");
 }
 
 
 /* =========================================================
-   OPEN MODAL
+   MODAL ROUTER
    ========================================================= */
 
-function openModal(html) {
+function openModal(type) {
 
-  const modal =
-    document.getElementById("modal");
-
-  const content =
-    document.getElementById("modalContent");
-
-  if (!modal || !content) {
-
-    console.error(
-      "Modal elements were not found."
-    );
-
+  if (type === "pilot") {
+    openPilotModal();
     return;
-
   }
 
-  content.innerHTML = html;
+  if (type === "audit") {
+    openScore();
+    return;
+  }
 
-  modal.classList.add("open");
+  if (type === "calcLead") {
+    openCalculatorLeadModal();
+    return;
+  }
 
-  modal.setAttribute(
-    "aria-hidden",
-    "false"
-  );
-
+  console.error("Unknown modal type:", type);
 }
 
 
 /* =========================================================
-   OPEN RESOURCE
+   BOOK A STRATEGY CALL
    ========================================================= */
+
+function openCal() {
+
+  /*
+   * Try opening Cal.com in a new tab.
+   * If the browser blocks it, use the current tab.
+   */
+
+  const newWindow = window.open(
+    CAL_LINK,
+    "_blank",
+    "noopener,noreferrer"
+  );
+
+  if (!newWindow) {
+    window.location.href = CAL_LINK;
+  }
+}
+
+
+/* =========================================================
+   GOOGLE SHEETS
+   ========================================================= */
+
+async function postLead(data) {
+
+  try {
+
+    await fetch(
+      ENDPOINT,
+      {
+        method: "POST",
+
+        /*
+         * IMPORTANT:
+         * Keep no-cors because the Google Apps Script
+         * endpoint is already configured to receive this.
+         */
+
+        mode: "no-cors",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body: JSON.stringify(data)
+      }
+    );
+
+    /*
+     * no-cors gives an opaque response.
+     * We therefore cannot inspect the response body.
+     * If fetch does not throw, the request was sent.
+     */
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "Google Sheets submission error:",
+      error
+    );
+
+    return false;
+  }
+}
+
+
+/* =========================================================
+   NORMALIZE FORM DATA
+   ========================================================= */
+
+function normalizeLead(
+  form,
+  type,
+  extra = {}
+) {
+
+  const raw =
+    Object.fromEntries(
+      new FormData(form).entries()
+    );
+
+  return {
+
+    type:
+      type || "",
+
+    name:
+      raw.name || "",
+
+    email:
+      raw.email || "",
+
+    phone:
+      raw.phone || "",
+
+    company:
+      raw.company || "",
+
+    website:
+      raw.website || "",
+
+    businessType:
+      raw.businessType ||
+      raw.type ||
+      "",
+
+    problem:
+      raw.problem ||
+      raw.challenge ||
+      "",
+
+    resource:
+      raw.resource ||
+      "",
+
+    source:
+      raw.source ||
+      "Flowexa Website",
+
+    details:
+      raw.details ||
+      "",
+
+    ...extra
+  };
+}
+
+
+/* =========================================================
+   FREE PILOT
+   ========================================================= */
+
+function openPilotModal() {
+
+  showModal(`
+
+    <div class="eyebrow">
+      FREE PILOT
+    </div>
+
+    <h2>
+      Apply for the Flowexa Free Pilot.
+    </h2>
+
+    <p>
+      Tell us a little about your business and
+      the bottleneck you want to improve.
+      We will review the information and follow up.
+    </p>
+
+    <form
+      id="pilotForm"
+      class="resource-form"
+    >
+
+      <label>
+        Full name *
+        <input
+          name="name"
+          required
+          autocomplete="name"
+        >
+      </label>
+
+      <label>
+        Business email *
+        <input
+          name="email"
+          type="email"
+          required
+          autocomplete="email"
+        >
+      </label>
+
+      <label>
+        Business name *
+        <input
+          name="company"
+          required
+          autocomplete="organization"
+        >
+      </label>
+
+      <label>
+        Website *
+        <input
+          name="website"
+          type="url"
+          placeholder="https://"
+          required
+        >
+      </label>
+
+      <label>
+        Business type *
+        <select
+          name="businessType"
+          required
+        >
+          <option value="">
+            Select one
+          </option>
+
+          <option>Roofing</option>
+          <option>HVAC</option>
+          <option>Plumbing</option>
+          <option>Kitchen Remodeling</option>
+          <option>Interior Design</option>
+          <option>Med Spa</option>
+          <option>Electrical</option>
+          <option>Other Home Service</option>
+        </select>
+      </label>
+
+      <label>
+        Biggest focus right now *
+        <select
+          name="challenge"
+          required
+        >
+          <option value="">
+            Select one
+          </option>
+
+          <option>
+            Missed calls / slow response
+          </option>
+
+          <option>
+            Lead qualification
+          </option>
+
+          <option>
+            Appointment booking
+          </option>
+
+          <option>
+            Follow-up
+          </option>
+
+          <option>
+            Old lead reactivation
+          </option>
+
+          <option>
+            Reporting / visibility
+          </option>
+
+          <option>
+            Other
+          </option>
+        </select>
+      </label>
+
+      <label class="wide">
+        Tell us what is happening today
+
+        <textarea
+          name="details"
+          rows="4"
+          placeholder="What happens from the moment a lead contacts you until the job is booked?"
+        ></textarea>
+      </label>
+
+      <button
+        class="btn blue glow"
+        type="submit"
+      >
+        Submit Free Pilot Application →
+      </button>
+
+      <p
+        id="pilotStatus"
+        class="small wide"
+        aria-live="polite"
+      ></p>
+
+    </form>
+  `);
+
+
+  const form =
+    document.getElementById("pilotForm");
+
+  if (!form) {
+    console.error("pilotForm was not created.");
+    return;
+  }
+
+
+  form.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      const button =
+        form.querySelector(
+          'button[type="submit"]'
+        );
+
+      const status =
+        document.getElementById(
+          "pilotStatus"
+        );
+
+
+      if (button) {
+
+        button.disabled = true;
+
+        button.textContent =
+          "Submitting…";
+      }
+
+
+      if (status) {
+
+        status.textContent =
+          "Sending your application…";
+      }
+
+
+      const data =
+        normalizeLead(
+          form,
+          "free-pilot",
+          {
+            source:
+              "Flowexa Website"
+          }
+        );
+
+
+      const ok =
+        await postLead(data);
+
+
+      if (ok) {
+
+        setModalContent(`
+
+          <div class="eyebrow">
+            FREE PILOT
+          </div>
+
+          <h2>
+            Application received.
+          </h2>
+
+          <p>
+            Your information has been
+            submitted successfully.
+            We will review it and follow up.
+          </p>
+
+          <div class="actions">
+
+            <button
+              class="btn blue glow"
+              onclick="closeModal()"
+              type="button"
+            >
+              Done
+            </button>
+
+            <button
+              class="btn outline"
+              onclick="openCal()"
+              type="button"
+            >
+              Book a Strategy Call →
+            </button>
+
+          </div>
+
+        `);
+
+      } else {
+
+        if (status) {
+
+          status.textContent =
+            "Something went wrong. Please try again.";
+        }
+
+
+        if (button) {
+
+          button.disabled = false;
+
+          button.textContent =
+            "Submit Free Pilot Application →";
+        }
+      }
+
+    }
+  );
+}
+
+
+/* =========================================================
+   PDF GATE
+   ========================================================= */
+
+function openPdfGate(key) {
+
+  openResource(key);
+}
+
 
 function openResource(key) {
 
   const resource =
     RESOURCE_META[key];
+
 
   if (!resource) {
 
@@ -142,25 +566,10 @@ function openResource(key) {
     );
 
     return;
-
   }
 
 
-  /*
-   * Booked Job Score is not a PDF.
-   * It gets its own diagnostic flow.
-   */
-
-  if (key === "score") {
-
-    openScore();
-
-    return;
-
-  }
-
-
-  openModal(`
+  showModal(`
 
     <div class="eyebrow">
       ${resource.kicker}
@@ -172,21 +581,16 @@ function openResource(key) {
 
     <p>
       ${resource.description}
-      Enter your details once. The PDF will become available
-      immediately after submission.
+      Enter your details once.
+      The PDF will become available immediately
+      after submission.
     </p>
 
 
     <form
-      class="resource-form"
       id="resourceForm"
+      class="resource-form"
     >
-
-      <input
-        type="hidden"
-        name="type"
-        value="resource-download"
-      >
 
       <input
         type="hidden"
@@ -200,11 +604,13 @@ function openResource(key) {
         value="Flowexa Website"
       >
 
+
       <label>
         Full name *
+
         <input
-          required
           name="name"
+          required
           autocomplete="name"
         >
       </label>
@@ -212,10 +618,11 @@ function openResource(key) {
 
       <label>
         Business email *
+
         <input
-          required
-          type="email"
           name="email"
+          type="email"
+          required
           autocomplete="email"
         >
       </label>
@@ -223,9 +630,10 @@ function openResource(key) {
 
       <label>
         Business name *
+
         <input
-          required
           name="company"
+          required
           autocomplete="organization"
         >
       </label>
@@ -233,63 +641,48 @@ function openResource(key) {
 
       <label>
         Website *
+
         <input
-          required
-          type="url"
           name="website"
+          type="url"
           placeholder="https://"
+          required
         >
       </label>
 
 
       <label>
         Business type *
+
         <select
-          required
           name="businessType"
+          required
         >
 
           <option value="">
             Select one
           </option>
 
-          <option>
-            Roofing
-          </option>
-
-          <option>
-            HVAC
-          </option>
-
-          <option>
-            Plumbing
-          </option>
-
-          <option>
-            Remodeling
-          </option>
-
-          <option>
-            Med Spa
-          </option>
-
-          <option>
-            Interior Design
-          </option>
-
-          <option>
-            Other home service
-          </option>
+          <option>Roofing</option>
+          <option>HVAC</option>
+          <option>Plumbing</option>
+          <option>Kitchen Remodeling</option>
+          <option>Interior Design</option>
+          <option>Med Spa</option>
+          <option>Electrical</option>
+          <option>Other Home Service</option>
 
         </select>
+
       </label>
 
 
       <label>
         Biggest focus right now *
+
         <select
-          required
           name="challenge"
+          required
         >
 
           <option value="">
@@ -317,20 +710,21 @@ function openResource(key) {
           </option>
 
         </select>
+
       </label>
 
 
-      <div class="wide download-note">
+      <div class="wide note">
 
-        Required fields are intentional:
-        this gives Flowexa enough context to follow up
-        with something relevant rather than generic marketing.
+        Required fields are intentional.
+        This gives Flowexa enough context
+        to follow up with something relevant.
 
       </div>
 
 
       <button
-        class="btn btn-primary"
+        class="btn blue glow"
         type="submit"
         id="resourceSubmit"
       >
@@ -339,8 +733,9 @@ function openResource(key) {
 
 
       <p
-        class="form-status wide"
         id="resourceStatus"
+        class="small wide"
+        aria-live="polite"
       ></p>
 
     </form>
@@ -357,17 +752,16 @@ function openResource(key) {
   if (!form) {
 
     console.error(
-      "Resource form was not created."
+      "resourceForm was not created."
     );
 
     return;
-
   }
 
 
   form.addEventListener(
     "submit",
-    function (event) {
+    function(event) {
 
       submitResource(
         event,
@@ -376,70 +770,11 @@ function openResource(key) {
 
     }
   );
-
 }
 
 
 /* =========================================================
-   SEND DATA TO GOOGLE SHEETS
-   ========================================================= */
-
-async function postLead(data) {
-
-  try {
-
-    /*
-     * We intentionally use text/plain.
-     *
-     * This avoids a CORS preflight request with
-     * Google Apps Script.
-     */
-
-    await fetch(
-      ENDPOINT,
-      {
-        method: "POST",
-
-        mode: "no-cors",
-
-        headers: {
-          "Content-Type":
-            "text/plain;charset=utf-8"
-        },
-
-        body:
-          JSON.stringify(data)
-      }
-    );
-
-
-    /*
-     * With no-cors the browser gives us an
-     * opaque response, so we cannot inspect
-     * Google's JSON response.
-     *
-     * The request itself has been sent.
-     */
-
-    return true;
-
-
-  } catch (error) {
-
-    console.error(
-      "Google Sheets submission error:",
-      error
-    );
-
-    return false;
-
-  }
-
-}
-
-
-/* =========================================================
-   RESOURCE SUBMISSION
+   PDF SUBMISSION
    ========================================================= */
 
 async function submitResource(
@@ -454,38 +789,24 @@ async function submitResource(
     event.target;
 
 
-  const status =
-    document.getElementById(
-      "resourceStatus"
-    );
-
-
   const button =
     document.getElementById(
       "resourceSubmit"
     );
 
 
-  if (!form || !status) {
-
-    console.error(
-      "Resource form/status missing."
+  const status =
+    document.getElementById(
+      "resourceStatus"
     );
-
-    return;
-
-  }
 
 
   const data =
-    Object.fromEntries(
-      new FormData(form).entries()
+    normalizeLead(
+      form,
+      "resource-download"
     );
 
-
-  /*
-   * Prevent duplicate submissions.
-   */
 
   if (button) {
 
@@ -493,12 +814,14 @@ async function submitResource(
 
     button.textContent =
       "Submitting…";
-
   }
 
 
-  status.textContent =
-    "Submitting your information…";
+  if (status) {
+
+    status.textContent =
+      "Submitting your information…";
+  }
 
 
   const ok =
@@ -511,8 +834,12 @@ async function submitResource(
 
   if (!ok) {
 
-    status.textContent =
-      "Something went wrong. Please try again.";
+    if (status) {
+
+      status.textContent =
+        "Something went wrong. Please try again.";
+    }
+
 
     if (button) {
 
@@ -520,81 +847,56 @@ async function submitResource(
 
       button.textContent =
         "Download My PDF →";
-
     }
 
-    return;
 
+    return;
   }
 
 
-  /*
-   * Submission was sent.
-   * Now show the download action.
-   */
+  setModalContent(`
 
-  status.textContent = "";
+    <div class="eyebrow">
+      ${resource.kicker}
+    </div>
 
+    <h2>
+      Your guide is ready.
+    </h2>
 
-  document
-    .getElementById(
-      "modalContent"
-    )
-    .innerHTML = `
-
-      <div class="success">
-
-        <div class="big">
-          ✓
-        </div>
+    <p>
+      Your information has been submitted
+      and your operating guide is ready.
+    </p>
 
 
-        <div class="eyebrow">
-          ${resource.kicker}
-        </div>
+    <div class="actions">
+
+      <a
+        class="btn blue glow"
+        href="${resource.file}"
+        target="_blank"
+        rel="noopener"
+      >
+        Open / Download the PDF →
+      </a>
 
 
-        <h2>
-          Your guide is ready.
-        </h2>
+      <button
+        class="btn outline"
+        onclick="openCal()"
+        type="button"
+      >
+        Book a Strategy Call →
+      </button>
 
+    </div>
 
-        <p>
-          Your information has been submitted
-          and your operating guide is ready.
-        </p>
+    <p class="micro">
+      The PDF will open in a new tab.
+    </p>
 
-
-        <a
-          class="btn btn-primary btn-lg"
-          href="${resource.file}"
-          target="_blank"
-          rel="noopener"
-        >
-          Open / Download the PDF →
-        </a>
-
-
-        <p class="micro">
-          The PDF will open in a new tab.
-          Use the download button in the PDF viewer
-          to save it to your device.
-        </p>
-
-
-        <a
-          class="btn btn-secondary"
-          href="${CAL_LINK}"
-          target="_blank"
-          rel="noopener"
-        >
-          Book a Strategy Call →
-        </a>
-
-      </div>
-
-    `;
-
+  `);
 }
 
 
@@ -604,7 +906,7 @@ async function submitResource(
 
 function openScore() {
 
-  openModal(`
+  showModal(`
 
     <div class="eyebrow">
       60-SECOND DIAGNOSTIC — BOOKED JOB SCORE™
@@ -627,11 +929,15 @@ function openScore() {
       id="scoreForm"
     >
 
+
       <label>
         1. How quickly do you normally respond
         to a new lead? *
 
-        <select required name="responseTime">
+        <select
+          required
+          name="responseTime"
+        >
 
           <option value="">
             Select one
@@ -665,7 +971,10 @@ function openScore() {
       <label>
         2. What happens when you miss a call? *
 
-        <select required name="missedCall">
+        <select
+          required
+          name="missedCall"
+        >
 
           <option value="">
             Select one
@@ -695,7 +1004,10 @@ function openScore() {
       <label>
         3. How consistently are estimates followed up? *
 
-        <select required name="estimateFollowup">
+        <select
+          required
+          name="estimateFollowup"
+        >
 
           <option value="">
             Select one
@@ -725,7 +1037,10 @@ function openScore() {
       <label>
         4. How are new leads tracked? *
 
-        <select required name="leadTracking">
+        <select
+          required
+          name="leadTracking"
+        >
 
           <option value="">
             Select one
@@ -755,7 +1070,10 @@ function openScore() {
       <label>
         5. Who handles incoming calls and leads? *
 
-        <select required name="leadHandling">
+        <select
+          required
+          name="leadHandling"
+        >
 
           <option value="">
             Select one
@@ -785,27 +1103,19 @@ function openScore() {
       <label>
         6. How often do leads go cold without a clear next step? *
 
-        <select required name="coldLeads">
+        <select
+          required
+          name="coldLeads"
+        >
 
           <option value="">
             Select one
           </option>
 
-          <option>
-            Rarely
-          </option>
-
-          <option>
-            Sometimes
-          </option>
-
-          <option>
-            Often
-          </option>
-
-          <option>
-            Very often
-          </option>
+          <option>Rarely</option>
+          <option>Sometimes</option>
+          <option>Often</option>
+          <option>Very often</option>
 
         </select>
 
@@ -815,7 +1125,10 @@ function openScore() {
       <label>
         7. How clearly can you see where leads are being lost? *
 
-        <select required name="visibility">
+        <select
+          required
+          name="visibility"
+        >
 
           <option value="">
             Select one
@@ -845,7 +1158,10 @@ function openScore() {
       <label>
         8. What would you most want to improve? *
 
-        <select required name="priority">
+        <select
+          required
+          name="priority"
+        >
 
           <option value="">
             Select one
@@ -883,7 +1199,7 @@ function openScore() {
       <div class="wide">
 
         <button
-          class="btn btn-primary"
+          class="btn blue glow"
           type="submit"
           id="scoreSubmit"
         >
@@ -894,9 +1210,11 @@ function openScore() {
 
 
       <p
-        class="form-status wide"
         id="scoreStatus"
+        class="small wide"
+        aria-live="polite"
       ></p>
+
 
     </form>
 
@@ -916,7 +1234,6 @@ function openScore() {
     "submit",
     submitScore
   );
-
 }
 
 
@@ -933,15 +1250,15 @@ async function submitScore(event) {
     event.target;
 
 
-  const status =
-    document.getElementById(
-      "scoreStatus"
-    );
-
-
   const button =
     document.getElementById(
       "scoreSubmit"
+    );
+
+
+  const status =
+    document.getElementById(
+      "scoreStatus"
     );
 
 
@@ -957,28 +1274,23 @@ async function submitScore(event) {
 
     button.textContent =
       "Calculating…";
-
   }
 
 
-  status.textContent =
-    "Calculating your directional score…";
+  if (status) {
 
-
-  /*
-   * Calculate a simple directional score.
-   * Higher score = stronger current process.
-   */
-
-  const values =
-    Object.values(answers);
+    status.textContent =
+      "Calculating your directional score…";
+  }
 
 
   let score = 0;
 
 
-  values.forEach(
-    function (value) {
+  Object.values(
+    answers
+  ).forEach(
+    function(value) {
 
       const text =
         String(value)
@@ -1007,11 +1319,7 @@ async function submitScore(event) {
   );
 
 
-  /*
-   * Send score information to Google Sheets.
-   */
-
-  const leadData = {
+  await postLead({
 
     type:
       "booked-job-score",
@@ -1070,20 +1378,11 @@ async function submitScore(event) {
     priority:
       answers.priority || ""
 
-  };
+  });
 
 
-  await postLead(
-    leadData
-  );
-
-
-  let title =
-    "Your Booked Job Score™";
-
-
-  let description =
-    "";
+  let title = "";
+  let description = "";
 
 
   if (score >= 13) {
@@ -1094,7 +1393,9 @@ async function submitScore(event) {
     description =
       "Your core lead-to-booking process appears relatively structured. The biggest opportunity is likely optimization rather than rebuilding the entire process.";
 
-  } else if (score >= 9) {
+  }
+
+  else if (score >= 9) {
 
     title =
       "There are meaningful gaps.";
@@ -1102,7 +1403,9 @@ async function submitScore(event) {
     description =
       "Your process has some structure, but several handoffs or follow-up points may be costing you booked jobs.";
 
-  } else {
+  }
+
+  else {
 
     title =
       "There is significant leakage.";
@@ -1113,87 +1416,295 @@ async function submitScore(event) {
   }
 
 
-  document
-    .getElementById(
-      "modalContent"
-    )
-    .innerHTML = `
+  setModalContent(`
 
-      <div class="success">
+    <div class="eyebrow">
+      BOOKED JOB SCORE™
+    </div>
 
-        <div class="big">
-          ${score}/16
-        </div>
+    <div class="big-number">
+      ${score}/16
+    </div>
 
-        <div class="eyebrow">
-          BOOKED JOB SCORE™
-        </div>
+    <h2>
+      ${title}
+    </h2>
 
-        <h2>
-          ${title}
-        </h2>
+    <p>
+      ${description}
+    </p>
 
-        <p>
-          ${description}
-        </p>
+    <p class="micro">
+      This is a directional diagnostic,
+      not a formal audit.
+    </p>
 
-        <p class="micro">
-          This is a directional diagnostic,
-          not a formal audit.
-        </p>
+    <div class="actions">
 
-        <a
-          class="btn btn-primary"
-          href="${CAL_LINK}"
-          target="_blank"
-          rel="noopener"
-        >
-          Book a Strategy Call →
-        </a>
+      <button
+        class="btn blue glow"
+        onclick="openCal()"
+        type="button"
+      >
+        Book a Strategy Call →
+      </button>
 
-      </div>
+      <button
+        class="btn outline"
+        onclick="closeModal()"
+        type="button"
+      >
+        Done
+      </button>
 
-    `;
+    </div>
 
+  `);
 }
 
 
 /* =========================================================
-   MAIN CONTACT FORM
+   REVENUE LEAK CALCULATOR
    ========================================================= */
 
-const leadForm =
-  document.getElementById(
-    "leadForm"
-  );
+function calcLeak() {
+
+  const missed =
+    Number(
+      document.getElementById(
+        "missed"
+      )?.value
+    ) || 0;
 
 
-if (leadForm) {
+  const rate =
+    Number(
+      document.getElementById(
+        "rate"
+      )?.value
+    ) || 0;
 
-  leadForm.addEventListener(
+
+  const job =
+    Number(
+      document.getElementById(
+        "job"
+      )?.value
+    ) || 0;
+
+
+  const safeRate =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        rate
+      )
+    ) / 100;
+
+
+  const revenue =
+    Math.max(
+      0,
+      missed
+    ) *
+    safeRate *
+    Math.max(
+      0,
+      job
+    );
+
+
+  const result =
+    document.getElementById(
+      "calcresult"
+    );
+
+
+  if (!result) {
+    return revenue;
+  }
+
+
+  const number =
+    result.querySelector(
+      ".big-number"
+    );
+
+
+  const bar =
+    result.querySelector(
+      ".leak-bar span"
+    );
+
+
+  if (number) {
+
+    number.textContent =
+      revenue.toLocaleString(
+        "en-US",
+        {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: 0
+        }
+      );
+
+  }
+
+
+  if (bar) {
+
+    const width =
+      Math.min(
+        100,
+        Math.max(
+          8,
+          safeRate * 100
+        )
+      );
+
+    bar.style.width =
+      width + "%";
+  }
+
+
+  return revenue;
+}
+
+
+/* =========================================================
+   EMAIL CALCULATOR ANALYSIS
+   ========================================================= */
+
+function openCalculatorLeadModal() {
+
+  const currentRevenue =
+    calcLeak() || 0;
+
+
+  showModal(`
+
+    <div class="eyebrow">
+      REVENUE LEAK CALCULATOR™
+    </div>
+
+    <h2>
+      Email me this analysis.
+    </h2>
+
+    <p>
+      Your current estimate is
+
+      <strong>
+        ${currentRevenue.toLocaleString(
+          "en-US",
+          {
+            style: "currency",
+            currency: "USD",
+            maximumFractionDigits: 0
+          }
+        )}
+      </strong>
+
+      of potential monthly revenue at risk.
+    </p>
+
+
+    <form
+      id="calcLeadForm"
+      class="resource-form"
+    >
+
+      <label>
+        Full name *
+
+        <input
+          name="name"
+          required
+          autocomplete="name"
+        >
+      </label>
+
+
+      <label>
+        Business email *
+
+        <input
+          name="email"
+          type="email"
+          required
+          autocomplete="email"
+        >
+      </label>
+
+
+      <label>
+        Business name *
+
+        <input
+          name="company"
+          required
+        >
+      </label>
+
+
+      <label>
+        Website *
+
+        <input
+          name="website"
+          type="url"
+          placeholder="https://"
+          required
+        >
+      </label>
+
+
+      <button
+        class="btn blue glow"
+        type="submit"
+      >
+        Send My Analysis →
+      </button>
+
+
+      <p
+        id="calcLeadStatus"
+        class="small wide"
+        aria-live="polite"
+      ></p>
+
+    </form>
+
+  `);
+
+
+  const form =
+    document.getElementById(
+      "calcLeadForm"
+    );
+
+
+  if (!form) return;
+
+
+  form.addEventListener(
     "submit",
-    async function (event) {
+    async function(event) {
 
       event.preventDefault();
 
 
-      const status =
-        document.getElementById(
-          "formStatus"
-        );
-
-
       const button =
-        leadForm.querySelector(
+        form.querySelector(
           'button[type="submit"]'
         );
 
 
-      const data =
-        Object.fromEntries(
-          new FormData(
-            leadForm
-          ).entries()
+      const status =
+        document.getElementById(
+          "calcLeadStatus"
         );
 
 
@@ -1203,140 +1714,179 @@ if (leadForm) {
 
         button.textContent =
           "Sending…";
-
       }
 
 
-      status.textContent =
-        "Sending your request…";
+      if (status) {
+
+        status.textContent =
+          "Sending your analysis…";
+      }
 
 
       const ok =
         await postLead(
-          data
+          normalizeLead(
+            form,
+            "calculator-lead",
+            {
+              problem:
+                "Revenue leak calculator",
+
+              resource:
+                "revenue-leak-calculator",
+
+              source:
+                "Flowexa Website",
+
+              calculatedRevenue:
+                currentRevenue
+            }
+          )
         );
 
 
       if (ok) {
 
-        status.textContent =
-          "Request received. We'll review the information and follow up.";
+        setModalContent(`
 
-        status.classList.add(
-          "success-text"
-        );
+          <div class="eyebrow">
+            REVENUE LEAK CALCULATOR™
+          </div>
 
-        leadForm.reset();
+          <h2>
+            Analysis submitted.
+          </h2>
 
+          <p>
+            Your information has been
+            sent successfully.
+          </p>
+
+          <button
+            class="btn blue glow"
+            onclick="closeModal()"
+            type="button"
+          >
+            Done
+          </button>
+
+        `);
 
       } else {
 
-        status.textContent =
-          "Something went wrong. Please try again or book a strategy call directly.";
+        if (status) {
 
-      }
+          status.textContent =
+            "Something went wrong. Please try again.";
+        }
 
 
-      if (button) {
+        if (button) {
 
-        button.disabled = false;
+          button.disabled = false;
 
-        button.textContent =
-          "Send Request →";
+          button.textContent =
+            "Send My Analysis →";
+        }
 
       }
 
     }
   );
-
 }
 
 
 /* =========================================================
-   CALCULATOR
+   MAIN CONTACT FORM
    ========================================================= */
 
-function calc() {
+function submitLead(
+  event,
+  type
+) {
 
-  const missedCallsInput =
+  event.preventDefault();
+
+
+  const form =
+    event.target;
+
+
+  const status =
     document.getElementById(
-      "missedCalls"
+      "contactStatus"
     );
 
 
-  const avgJobInput =
-    document.getElementById(
-      "avgJob"
+  const button =
+    form.querySelector(
+      'button[type="submit"]'
     );
 
 
-  const bookingRateInput =
-    document.getElementById(
-      "bookingRate"
-    );
+  if (button) {
 
+    button.disabled = true;
 
-  const lossElement =
-    document.getElementById(
-      "loss"
-    );
-
-
-  if (
-    !missedCallsInput ||
-    !avgJobInput ||
-    !bookingRateInput ||
-    !lossElement
-  ) {
-
-    return;
-
+    button.textContent =
+      "Sending…";
   }
 
 
-  const calls =
-    Math.max(
-      0,
-      Number(
-        missedCallsInput.value
-      ) || 0
-    );
+  if (status) {
+
+    status.textContent =
+      "Sending your request…";
+  }
 
 
-  const avg =
-    Math.max(
-      0,
-      Number(
-        avgJobInput.value
-      ) || 0
-    );
-
-
-  const rate =
-    Math.min(
-      100,
-      Math.max(
-        0,
-        Number(
-          bookingRateInput.value
-        ) || 0
-      )
-    ) / 100;
-
-
-  const loss =
-    calls *
-    rate *
-    avg;
-
-
-  lossElement.textContent =
-    loss.toLocaleString(
-      "en-US",
+  const data =
+    normalizeLead(
+      form,
+      type || "contact",
       {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0
+        source:
+          "Flowexa Website"
+      }
+    );
+
+
+  postLead(data)
+    .then(
+      function(ok) {
+
+        if (ok) {
+
+          if (status) {
+
+            status.textContent =
+              "Request received. We'll review the information and follow up.";
+          }
+
+          form.reset();
+
+        }
+
+        else {
+
+          if (status) {
+
+            status.textContent =
+              "Something went wrong. Please try again or book a strategy call directly.";
+          }
+
+        }
+
+
+        if (button) {
+
+          button.disabled = false;
+
+          button.textContent =
+            "Send Request →";
+        }
+
       }
     );
 
@@ -1344,27 +1894,72 @@ function calc() {
 
 
 /* =========================================================
-   CALCULATOR LISTENERS
+   INITIALIZATION
    ========================================================= */
 
-[
-  "missedCalls",
-  "avgJob",
-  "bookingRate"
-].forEach(
-  function (id) {
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
 
-    const element =
+    /*
+     * Initialize calculator.
+     */
+
+    calcLeak();
+
+
+    [
+      "missed",
+      "rate",
+      "job"
+    ].forEach(
+      function(id) {
+
+        const element =
+          document.getElementById(
+            id
+          );
+
+
+        if (element) {
+
+          element.addEventListener(
+            "input",
+            calcLeak
+          );
+
+        }
+
+      }
+    );
+
+
+    /*
+     * Close modal when clicking
+     * outside the modal box.
+     */
+
+    const modal =
       document.getElementById(
-        id
+        "modal"
       );
 
 
-    if (element) {
+    if (modal) {
 
-      element.addEventListener(
-        "input",
-        calc
+      modal.addEventListener(
+        "click",
+        function(event) {
+
+          if (
+            event.target === modal
+          ) {
+
+            closeModal();
+
+          }
+
+        }
       );
 
     }
@@ -1373,26 +1968,21 @@ function calc() {
 );
 
 
-calc();
-
-
 /* =========================================================
    SCROLL PROGRESS
    ========================================================= */
 
 window.addEventListener(
   "scroll",
-  function () {
+  function() {
 
     const progress =
-      document.querySelector(
-        ".progress, #scrollProgress"
+      document.getElementById(
+        "scrollProgress"
       );
 
 
-    if (!progress) {
-      return;
-    }
+    if (!progress) return;
 
 
     const height =
@@ -1423,39 +2013,10 @@ window.addEventListener(
 
 document.addEventListener(
   "keydown",
-  function (event) {
+  function(event) {
 
     if (
       event.key === "Escape"
-    ) {
-
-      closeModal();
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   CLICK OUTSIDE MODAL
-   ========================================================= */
-
-document.addEventListener(
-  "click",
-  function (event) {
-
-    const modal =
-      document.getElementById(
-        "modal"
-      );
-
-
-    if (!modal) return;
-
-
-    if (
-      event.target === modal
     ) {
 
       closeModal();
