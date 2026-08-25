@@ -1,6 +1,6 @@
 /* =========================================================
    FLOWEXA WEBSITE
-   Interactions + Google Sheets Integration
+   Clean interactions + Google Sheets + Cal.com embed
    ========================================================= */
 
 const ENDPOINT =
@@ -8,11 +8,6 @@ const ENDPOINT =
 
 const CAL_LINK =
   "https://cal.com/saudagar-zeeshan-sttyxl/30min";
-
-
-/* =========================================================
-   RESOURCE FILES
-   ========================================================= */
 
 const RESOURCE_META = {
   playbook: {
@@ -22,7 +17,6 @@ const RESOURCE_META = {
       "A step-by-step operating system for tightening an already-growing home-service business.",
     file: "booked-job-playbook.pdf"
   },
-
   recovery: {
     title: "Revenue Recovery Map™",
     kicker: "FREE PDF — REVENUE RECOVERY MAP™",
@@ -30,7 +24,6 @@ const RESOURCE_META = {
       "A practical map for finding money already sitting in missed calls, unsold estimates, no-shows and dormant opportunities.",
     file: "revenue-recovery-map.pdf"
   },
-
   followup: {
     title: "Lead Follow-Up Sequence™",
     kicker: "FREE PDF — LEAD FOLLOW-UP SEQUENCE™",
@@ -38,7 +31,6 @@ const RESOURCE_META = {
       "A stage-based follow-up operating system for serious opportunities.",
     file: "lead-follow-up-sequence.pdf"
   },
-
   receptionist: {
     title: "AI Front Desk Blueprint™",
     kicker: "FREE PDF — AI FRONT DESK BLUEPRINT™",
@@ -50,7 +42,7 @@ const RESOURCE_META = {
 
 
 /* =========================================================
-   MODAL
+   MODAL HELPERS
    ========================================================= */
 
 function getModal() {
@@ -108,13 +100,7 @@ function closeModal() {
   document.body.classList.remove("modal-open");
 }
 
-
-/* =========================================================
-   MODAL ROUTER
-   ========================================================= */
-
 function openModal(type) {
-
   if (type === "pilot") {
     openPilotModal();
     return;
@@ -135,25 +121,177 @@ function openModal(type) {
 
 
 /* =========================================================
-   BOOK A STRATEGY CALL
+   CAL.COM — OPEN INSIDE FLOWEXA MODAL
    ========================================================= */
+
+let calSdkLoading = false;
+let calSdkReady = false;
+
+function loadCalSdk() {
+  if (calSdkReady || window.Cal) {
+    initializeCalEmbed();
+    return;
+  }
+
+  if (calSdkLoading) {
+    return;
+  }
+
+  calSdkLoading = true;
+
+  const existing =
+    document.querySelector(
+      'script[src="https://app.cal.com/embed/embed.js"]'
+    );
+
+  if (existing) {
+    existing.addEventListener(
+      "load",
+      function () {
+        calSdkReady = true;
+        initializeCalEmbed();
+      }
+    );
+
+    return;
+  }
+
+  const script = document.createElement("script");
+
+  script.src =
+    "https://app.cal.com/embed/embed.js";
+
+  script.async = true;
+
+  script.onload = function () {
+    calSdkReady = true;
+    initializeCalEmbed();
+  };
+
+  script.onerror = function () {
+    calSdkLoading = false;
+    showCalFallback();
+  };
+
+  document.head.appendChild(script);
+}
+
+function initializeCalEmbed() {
+  const target =
+    document.getElementById(
+      "flowexaCalEmbed"
+    );
+
+  if (!target || !window.Cal) {
+    return;
+  }
+
+  try {
+    window.Cal(
+      "init",
+      {
+        origin: "https://app.cal.com"
+      }
+    );
+
+    window.Cal(
+      "inline",
+      {
+        elementOrSelector:
+          "#flowexaCalEmbed",
+
+        calLink:
+          "saudagar-zeeshan-sttyxl/30min",
+
+        config: {
+          layout: "month_view",
+          theme: "light"
+        }
+      }
+    );
+
+  } catch (error) {
+    console.error(
+      "Cal.com initialization error:",
+      error
+    );
+
+    showCalFallback();
+  }
+}
+
+function showCalFallback() {
+  const target =
+    document.getElementById(
+      "flowexaCalEmbed"
+    );
+
+  if (!target) return;
+
+  target.innerHTML = `
+    <div class="cal-loading cal-error">
+
+      <div>
+        The calendar could not load inside the website.
+      </div>
+
+      <a
+        href="${CAL_LINK}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open Calendar in New Tab →
+      </a>
+
+    </div>
+  `;
+}
 
 function openCal() {
 
-  /*
-   * Try opening Cal.com in a new tab.
-   * If the browser blocks it, use the current tab.
-   */
+  showModal(`
 
-  const newWindow = window.open(
-    CAL_LINK,
-    "_blank",
-    "noopener,noreferrer"
-  );
+    <div class="eyebrow">
+      FLOWEXA STRATEGY CALL
+    </div>
 
-  if (!newWindow) {
-    window.location.href = CAL_LINK;
-  }
+    <h2>
+      Book a Strategy Call.
+    </h2>
+
+    <p>
+      Choose an available time below without
+      leaving the Flowexa website.
+    </p>
+
+    <div class="cal-wrap">
+
+      <div
+        id="flowexaCalEmbed"
+        class="cal-inline"
+      >
+        <div class="cal-loading">
+          Loading the calendar…
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cal-actions">
+
+      <a
+        class="btn outline"
+        href="${CAL_LINK}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open Calendar in New Tab →
+      </a>
+
+    </div>
+  `);
+
+  loadCalSdk();
 }
 
 
@@ -169,13 +307,6 @@ async function postLead(data) {
       ENDPOINT,
       {
         method: "POST",
-
-        /*
-         * IMPORTANT:
-         * Keep no-cors because the Google Apps Script
-         * endpoint is already configured to receive this.
-         */
-
         mode: "no-cors",
 
         headers: {
@@ -188,9 +319,8 @@ async function postLead(data) {
     );
 
     /*
-     * no-cors gives an opaque response.
-     * We therefore cannot inspect the response body.
-     * If fetch does not throw, the request was sent.
+     * no-cors intentionally returns an opaque response.
+     * A completed fetch means the request was sent.
      */
 
     return true;
@@ -208,7 +338,7 @@ async function postLead(data) {
 
 
 /* =========================================================
-   NORMALIZE FORM DATA
+   FORM NORMALIZATION
    ========================================================= */
 
 function normalizeLead(
@@ -223,7 +353,6 @@ function normalizeLead(
     );
 
   return {
-
     type:
       type || "",
 
@@ -340,10 +469,7 @@ function openPilotModal() {
           name="businessType"
           required
         >
-          <option value="">
-            Select one
-          </option>
-
+          <option value="">Select one</option>
           <option>Roofing</option>
           <option>HVAC</option>
           <option>Plumbing</option>
@@ -361,37 +487,14 @@ function openPilotModal() {
           name="challenge"
           required
         >
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            Missed calls / slow response
-          </option>
-
-          <option>
-            Lead qualification
-          </option>
-
-          <option>
-            Appointment booking
-          </option>
-
-          <option>
-            Follow-up
-          </option>
-
-          <option>
-            Old lead reactivation
-          </option>
-
-          <option>
-            Reporting / visibility
-          </option>
-
-          <option>
-            Other
-          </option>
+          <option value="">Select one</option>
+          <option>Missed calls / slow response</option>
+          <option>Lead qualification</option>
+          <option>Appointment booking</option>
+          <option>Follow-up</option>
+          <option>Old lead reactivation</option>
+          <option>Reporting / visibility</option>
+          <option>Other</option>
         </select>
       </label>
 
@@ -421,19 +524,16 @@ function openPilotModal() {
     </form>
   `);
 
-
   const form =
-    document.getElementById("pilotForm");
+    document.getElementById(
+      "pilotForm"
+    );
 
-  if (!form) {
-    console.error("pilotForm was not created.");
-    return;
-  }
-
+  if (!form) return;
 
   form.addEventListener(
     "submit",
-    async function(event) {
+    async function (event) {
 
       event.preventDefault();
 
@@ -447,37 +547,24 @@ function openPilotModal() {
           "pilotStatus"
         );
 
-
       if (button) {
-
         button.disabled = true;
-
         button.textContent =
           "Submitting…";
       }
 
-
       if (status) {
-
         status.textContent =
           "Sending your application…";
       }
 
-
-      const data =
-        normalizeLead(
-          form,
-          "free-pilot",
-          {
-            source:
-              "Flowexa Website"
-          }
-        );
-
-
       const ok =
-        await postLead(data);
-
+        await postLead(
+          normalizeLead(
+            form,
+            "free-pilot"
+          )
+        );
 
       if (ok) {
 
@@ -516,58 +603,46 @@ function openPilotModal() {
             </button>
 
           </div>
-
         `);
 
       } else {
 
         if (status) {
-
           status.textContent =
             "Something went wrong. Please try again.";
         }
 
-
         if (button) {
-
           button.disabled = false;
-
           button.textContent =
             "Submit Free Pilot Application →";
         }
       }
-
     }
   );
 }
 
 
 /* =========================================================
-   PDF GATE
+   PDF RESOURCES
    ========================================================= */
 
 function openPdfGate(key) {
-
   openResource(key);
 }
-
 
 function openResource(key) {
 
   const resource =
     RESOURCE_META[key];
 
-
   if (!resource) {
-
     console.error(
       "Unknown resource:",
       key
     );
-
     return;
   }
-
 
   showModal(`
 
@@ -586,7 +661,6 @@ function openResource(key) {
       after submission.
     </p>
 
-
     <form
       id="resourceForm"
       class="resource-form"
@@ -604,10 +678,8 @@ function openResource(key) {
         value="Flowexa Website"
       >
 
-
       <label>
         Full name *
-
         <input
           name="name"
           required
@@ -615,10 +687,8 @@ function openResource(key) {
         >
       </label>
 
-
       <label>
         Business email *
-
         <input
           name="email"
           type="email"
@@ -627,10 +697,8 @@ function openResource(key) {
         >
       </label>
 
-
       <label>
         Business name *
-
         <input
           name="company"
           required
@@ -638,10 +706,8 @@ function openResource(key) {
         >
       </label>
 
-
       <label>
         Website *
-
         <input
           name="website"
           type="url"
@@ -650,19 +716,13 @@ function openResource(key) {
         >
       </label>
 
-
       <label>
         Business type *
-
         <select
           name="businessType"
           required
         >
-
-          <option value="">
-            Select one
-          </option>
-
+          <option value="">Select one</option>
           <option>Roofing</option>
           <option>HVAC</option>
           <option>Plumbing</option>
@@ -671,57 +731,29 @@ function openResource(key) {
           <option>Med Spa</option>
           <option>Electrical</option>
           <option>Other Home Service</option>
-
         </select>
-
       </label>
-
 
       <label>
         Biggest focus right now *
-
         <select
           name="challenge"
           required
         >
-
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            Recover missed calls / old opportunities
-          </option>
-
-          <option>
-            Convert more existing leads
-          </option>
-
-          <option>
-            Improve follow-up
-          </option>
-
-          <option>
-            Book appointments faster
-          </option>
-
-          <option>
-            Automate operations
-          </option>
-
+          <option value="">Select one</option>
+          <option>Recover missed calls / old opportunities</option>
+          <option>Convert more existing leads</option>
+          <option>Improve follow-up</option>
+          <option>Book appointments faster</option>
+          <option>Automate operations</option>
         </select>
-
       </label>
 
-
       <div class="wide note">
-
         Required fields are intentional.
         This gives Flowexa enough context
         to follow up with something relevant.
-
       </div>
-
 
       <button
         class="btn blue glow"
@@ -731,7 +763,6 @@ function openResource(key) {
         Download My PDF →
       </button>
 
-
       <p
         id="resourceStatus"
         class="small wide"
@@ -739,43 +770,25 @@ function openResource(key) {
       ></p>
 
     </form>
-
   `);
-
 
   const form =
     document.getElementById(
       "resourceForm"
     );
 
-
-  if (!form) {
-
-    console.error(
-      "resourceForm was not created."
-    );
-
-    return;
-  }
-
+  if (!form) return;
 
   form.addEventListener(
     "submit",
-    function(event) {
-
+    function (event) {
       submitResource(
         event,
         key
       );
-
     }
   );
 }
-
-
-/* =========================================================
-   PDF SUBMISSION
-   ========================================================= */
 
 async function submitResource(
   event,
@@ -784,75 +797,56 @@ async function submitResource(
 
   event.preventDefault();
 
-
   const form =
     event.target;
-
 
   const button =
     document.getElementById(
       "resourceSubmit"
     );
 
-
   const status =
     document.getElementById(
       "resourceStatus"
     );
 
-
-  const data =
-    normalizeLead(
-      form,
-      "resource-download"
-    );
-
-
   if (button) {
-
     button.disabled = true;
-
     button.textContent =
       "Submitting…";
   }
 
-
   if (status) {
-
     status.textContent =
       "Submitting your information…";
   }
 
-
   const ok =
-    await postLead(data);
-
+    await postLead(
+      normalizeLead(
+        form,
+        "resource-download"
+      )
+    );
 
   const resource =
     RESOURCE_META[key];
 
-
   if (!ok) {
 
     if (status) {
-
       status.textContent =
         "Something went wrong. Please try again.";
     }
 
-
     if (button) {
-
       button.disabled = false;
-
       button.textContent =
         "Download My PDF →";
     }
 
-
     return;
   }
-
 
   setModalContent(`
 
@@ -869,18 +863,16 @@ async function submitResource(
       and your operating guide is ready.
     </p>
 
-
     <div class="actions">
 
       <a
         class="btn blue glow"
         href="${resource.file}"
         target="_blank"
-        rel="noopener"
+        rel="noopener noreferrer"
       >
         Open / Download the PDF →
       </a>
-
 
       <button
         class="btn outline"
@@ -895,7 +887,6 @@ async function submitResource(
     <p class="micro">
       The PDF will open in a new tab.
     </p>
-
   `);
 }
 
@@ -923,281 +914,103 @@ function openScore() {
       to show where we'd investigate first.
     </p>
 
-
     <form
       class="score-form"
       id="scoreForm"
     >
 
-
       <label>
-        1. How quickly do you normally respond
-        to a new lead? *
-
-        <select
-          required
-          name="responseTime"
-        >
-
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            Within 5 minutes
-          </option>
-
-          <option>
-            Within 30 minutes
-          </option>
-
-          <option>
-            Within a few hours
-          </option>
-
-          <option>
-            Same day
-          </option>
-
-          <option>
-            Next day or later
-          </option>
-
+        1. How quickly do you normally respond to a new lead? *
+        <select required name="responseTime">
+          <option value="">Select one</option>
+          <option>Within 5 minutes</option>
+          <option>Within 30 minutes</option>
+          <option>Within a few hours</option>
+          <option>Same day</option>
+          <option>Next day or later</option>
         </select>
-
       </label>
-
 
       <label>
         2. What happens when you miss a call? *
-
-        <select
-          required
-          name="missedCall"
-        >
-
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            We call back immediately
-          </option>
-
-          <option>
-            We usually call back later
-          </option>
-
-          <option>
-            It depends on the team
-          </option>
-
-          <option>
-            There is no consistent process
-          </option>
-
+        <select required name="missedCall">
+          <option value="">Select one</option>
+          <option>We call back immediately</option>
+          <option>We usually call back later</option>
+          <option>It depends on the team</option>
+          <option>There is no consistent process</option>
         </select>
-
       </label>
-
 
       <label>
         3. How consistently are estimates followed up? *
-
-        <select
-          required
-          name="estimateFollowup"
-        >
-
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            Every estimate has a follow-up process
-          </option>
-
-          <option>
-            Most estimates get followed up
-          </option>
-
-          <option>
-            Follow-up depends on the salesperson
-          </option>
-
-          <option>
-            There is little or no structured follow-up
-          </option>
-
+        <select required name="estimateFollowup">
+          <option value="">Select one</option>
+          <option>Every estimate has a follow-up process</option>
+          <option>Most estimates get followed up</option>
+          <option>Follow-up depends on the salesperson</option>
+          <option>There is little or no structured follow-up</option>
         </select>
-
       </label>
-
 
       <label>
         4. How are new leads tracked? *
-
-        <select
-          required
-          name="leadTracking"
-        >
-
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            CRM / centralized system
-          </option>
-
-          <option>
-            Spreadsheet
-          </option>
-
-          <option>
-            Multiple tools
-          </option>
-
-          <option>
-            Mostly memory / inbox / phone
-          </option>
-
+        <select required name="leadTracking">
+          <option value="">Select one</option>
+          <option>CRM / centralized system</option>
+          <option>Spreadsheet</option>
+          <option>Multiple tools</option>
+          <option>Mostly memory / inbox / phone</option>
         </select>
-
       </label>
-
 
       <label>
         5. Who handles incoming calls and leads? *
-
-        <select
-          required
-          name="leadHandling"
-        >
-
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            Dedicated receptionist / coordinator
-          </option>
-
-          <option>
-            Sales team
-          </option>
-
-          <option>
-            Owner
-          </option>
-
-          <option>
-            Whoever is available
-          </option>
-
+        <select required name="leadHandling">
+          <option value="">Select one</option>
+          <option>Dedicated receptionist / coordinator</option>
+          <option>Sales team</option>
+          <option>Owner</option>
+          <option>Whoever is available</option>
         </select>
-
       </label>
-
 
       <label>
         6. How often do leads go cold without a clear next step? *
-
-        <select
-          required
-          name="coldLeads"
-        >
-
-          <option value="">
-            Select one
-          </option>
-
+        <select required name="coldLeads">
+          <option value="">Select one</option>
           <option>Rarely</option>
           <option>Sometimes</option>
           <option>Often</option>
           <option>Very often</option>
-
         </select>
-
       </label>
-
 
       <label>
         7. How clearly can you see where leads are being lost? *
-
-        <select
-          required
-          name="visibility"
-        >
-
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            Very clearly
-          </option>
-
-          <option>
-            Mostly clearly
-          </option>
-
-          <option>
-            Somewhat
-          </option>
-
-          <option>
-            Not clearly
-          </option>
-
+        <select required name="visibility">
+          <option value="">Select one</option>
+          <option>Very clearly</option>
+          <option>Mostly clearly</option>
+          <option>Somewhat</option>
+          <option>Not clearly</option>
         </select>
-
       </label>
-
 
       <label>
         8. What would you most want to improve? *
-
-        <select
-          required
-          name="priority"
-        >
-
-          <option value="">
-            Select one
-          </option>
-
-          <option>
-            Speed to lead
-          </option>
-
-          <option>
-            Missed-call recovery
-          </option>
-
-          <option>
-            Estimate follow-up
-          </option>
-
-          <option>
-            Lead qualification
-          </option>
-
-          <option>
-            Appointment booking
-          </option>
-
-          <option>
-            Overall visibility
-          </option>
-
+        <select required name="priority">
+          <option value="">Select one</option>
+          <option>Speed to lead</option>
+          <option>Missed-call recovery</option>
+          <option>Estimate follow-up</option>
+          <option>Lead qualification</option>
+          <option>Appointment booking</option>
+          <option>Overall visibility</option>
         </select>
-
       </label>
 
-
       <div class="wide">
-
         <button
           class="btn blue glow"
           type="submit"
@@ -1205,9 +1018,7 @@ function openScore() {
         >
           See My Score →
         </button>
-
       </div>
-
 
       <p
         id="scoreStatus"
@@ -1215,20 +1026,15 @@ function openScore() {
         aria-live="polite"
       ></p>
 
-
     </form>
-
   `);
-
 
   const form =
     document.getElementById(
       "scoreForm"
     );
 
-
   if (!form) return;
-
 
   form.addEventListener(
     "submit",
@@ -1236,66 +1042,48 @@ function openScore() {
   );
 }
 
-
-/* =========================================================
-   SCORE SUBMISSION
-   ========================================================= */
-
 async function submitScore(event) {
 
   event.preventDefault();
 
-
   const form =
     event.target;
-
 
   const button =
     document.getElementById(
       "scoreSubmit"
     );
 
-
   const status =
     document.getElementById(
       "scoreStatus"
     );
-
 
   const answers =
     Object.fromEntries(
       new FormData(form).entries()
     );
 
-
   if (button) {
-
     button.disabled = true;
-
     button.textContent =
       "Calculating…";
   }
 
-
   if (status) {
-
     status.textContent =
       "Calculating your directional score…";
   }
 
-
   let score = 0;
-
 
   Object.values(
     answers
   ).forEach(
-    function(value) {
+    function (value) {
 
       const text =
-        String(value)
-          .toLowerCase();
-
+        String(value).toLowerCase();
 
       if (
         text.includes("within 5") ||
@@ -1306,84 +1094,58 @@ async function submitScore(event) {
         text === "rarely" ||
         text.includes("very clearly")
       ) {
-
         score += 2;
-
       } else {
-
         score += 1;
-
       }
-
     }
   );
 
+  const submitted =
+    await postLead({
 
-  await postLead({
+      type:
+        "booked-job-score",
 
-    type:
-      "booked-job-score",
+      problem:
+        answers.priority || "",
 
-    name:
-      "",
+      resource:
+        "booked-job-score",
 
-    email:
-      "",
+      source:
+        "Flowexa Website",
 
-    phone:
-      "",
+      score:
+        score,
 
-    company:
-      "",
+      responseTime:
+        answers.responseTime || "",
 
-    website:
-      "",
+      missedCall:
+        answers.missedCall || "",
 
-    businessType:
-      "",
+      estimateFollowup:
+        answers.estimateFollowup || "",
 
-    problem:
-      answers.priority || "",
+      leadTracking:
+        answers.leadTracking || "",
 
-    resource:
-      "booked-job-score",
+      leadHandling:
+        answers.leadHandling || "",
 
-    source:
-      "Flowexa Website",
+      coldLeads:
+        answers.coldLeads || "",
 
-    score:
-      score,
+      visibility:
+        answers.visibility || "",
 
-    responseTime:
-      answers.responseTime || "",
-
-    missedCall:
-      answers.missedCall || "",
-
-    estimateFollowup:
-      answers.estimateFollowup || "",
-
-    leadTracking:
-      answers.leadTracking || "",
-
-    leadHandling:
-      answers.leadHandling || "",
-
-    coldLeads:
-      answers.coldLeads || "",
-
-    visibility:
-      answers.visibility || "",
-
-    priority:
-      answers.priority || ""
-
-  });
-
+      priority:
+        answers.priority || ""
+    });
 
   let title = "";
   let description = "";
-
 
   if (score >= 13) {
 
@@ -1393,9 +1155,7 @@ async function submitScore(event) {
     description =
       "Your core lead-to-booking process appears relatively structured. The biggest opportunity is likely optimization rather than rebuilding the entire process.";
 
-  }
-
-  else if (score >= 9) {
+  } else if (score >= 9) {
 
     title =
       "There are meaningful gaps.";
@@ -1403,18 +1163,14 @@ async function submitScore(event) {
     description =
       "Your process has some structure, but several handoffs or follow-up points may be costing you booked jobs.";
 
-  }
-
-  else {
+  } else {
 
     title =
       "There is significant leakage.";
 
     description =
       "Your answers suggest that inconsistent response, tracking or follow-up may be creating avoidable lead-to-booking losses.";
-
   }
-
 
   setModalContent(`
 
@@ -1439,6 +1195,17 @@ async function submitScore(event) {
       not a formal audit.
     </p>
 
+    ${
+      submitted
+        ? ""
+        : `
+          <p class="micro">
+            The diagnostic result is shown,
+            but the lead record could not be confirmed.
+          </p>
+        `
+    }
+
     <div class="actions">
 
       <button
@@ -1458,7 +1225,6 @@ async function submitScore(event) {
       </button>
 
     </div>
-
   `);
 }
 
@@ -1467,7 +1233,7 @@ async function submitScore(event) {
    REVENUE LEAK CALCULATOR
    ========================================================= */
 
-function calcLeak() {
+function getLeakValue() {
 
   const missed =
     Number(
@@ -1476,7 +1242,6 @@ function calcLeak() {
       )?.value
     ) || 0;
 
-
   const rate =
     Number(
       document.getElementById(
@@ -1484,14 +1249,12 @@ function calcLeak() {
       )?.value
     ) || 0;
 
-
   const job =
     Number(
       document.getElementById(
         "job"
       )?.value
     ) || 0;
-
 
   const safeRate =
     Math.min(
@@ -1502,41 +1265,36 @@ function calcLeak() {
       )
     ) / 100;
 
+  return (
+    Math.max(0, missed) *
+    safeRate *
+    Math.max(0, job)
+  );
+}
+
+function calcLeak() {
 
   const revenue =
-    Math.max(
-      0,
-      missed
-    ) *
-    safeRate *
-    Math.max(
-      0,
-      job
-    );
-
+    getLeakValue();
 
   const result =
     document.getElementById(
       "calcresult"
     );
 
-
   if (!result) {
     return revenue;
   }
-
 
   const number =
     result.querySelector(
       ".big-number"
     );
 
-
   const bar =
     result.querySelector(
       ".leak-bar span"
     );
-
 
   if (number) {
 
@@ -1549,25 +1307,38 @@ function calcLeak() {
           maximumFractionDigits: 0
         }
       );
-
   }
 
-
   if (bar) {
+
+    const rate =
+      Number(
+        document.getElementById(
+          "rate"
+        )?.value
+      ) || 0;
+
+    const safeRate =
+      Math.min(
+        100,
+        Math.max(
+          0,
+          rate
+        )
+      );
 
     const width =
       Math.min(
         100,
         Math.max(
           8,
-          safeRate * 100
+          safeRate
         )
       );
 
     bar.style.width =
       width + "%";
   }
-
 
   return revenue;
 }
@@ -1580,8 +1351,7 @@ function calcLeak() {
 function openCalculatorLeadModal() {
 
   const currentRevenue =
-    calcLeak() || 0;
-
+    getLeakValue();
 
   showModal(`
 
@@ -1595,7 +1365,6 @@ function openCalculatorLeadModal() {
 
     <p>
       Your current estimate is
-
       <strong>
         ${currentRevenue.toLocaleString(
           "en-US",
@@ -1606,10 +1375,8 @@ function openCalculatorLeadModal() {
           }
         )}
       </strong>
-
       of potential monthly revenue at risk.
     </p>
-
 
     <form
       id="calcLeadForm"
@@ -1618,7 +1385,6 @@ function openCalculatorLeadModal() {
 
       <label>
         Full name *
-
         <input
           name="name"
           required
@@ -1626,10 +1392,8 @@ function openCalculatorLeadModal() {
         >
       </label>
 
-
       <label>
         Business email *
-
         <input
           name="email"
           type="email"
@@ -1638,20 +1402,16 @@ function openCalculatorLeadModal() {
         >
       </label>
 
-
       <label>
         Business name *
-
         <input
           name="company"
           required
         >
       </label>
 
-
       <label>
         Website *
-
         <input
           name="website"
           type="url"
@@ -1660,14 +1420,12 @@ function openCalculatorLeadModal() {
         >
       </label>
 
-
       <button
         class="btn blue glow"
         type="submit"
       >
         Send My Analysis →
       </button>
-
 
       <p
         id="calcLeadStatus"
@@ -1676,53 +1434,41 @@ function openCalculatorLeadModal() {
       ></p>
 
     </form>
-
   `);
-
 
   const form =
     document.getElementById(
       "calcLeadForm"
     );
 
-
   if (!form) return;
-
 
   form.addEventListener(
     "submit",
-    async function(event) {
+    async function (event) {
 
       event.preventDefault();
-
 
       const button =
         form.querySelector(
           'button[type="submit"]'
         );
 
-
       const status =
         document.getElementById(
           "calcLeadStatus"
         );
 
-
       if (button) {
-
         button.disabled = true;
-
         button.textContent =
           "Sending…";
       }
 
-
       if (status) {
-
         status.textContent =
           "Sending your analysis…";
       }
-
 
       const ok =
         await postLead(
@@ -1736,15 +1482,11 @@ function openCalculatorLeadModal() {
               resource:
                 "revenue-leak-calculator",
 
-              source:
-                "Flowexa Website",
-
               calculatedRevenue:
                 currentRevenue
             }
           )
         );
-
 
       if (ok) {
 
@@ -1770,28 +1512,21 @@ function openCalculatorLeadModal() {
           >
             Done
           </button>
-
         `);
 
       } else {
 
         if (status) {
-
           status.textContent =
             "Something went wrong. Please try again.";
         }
 
-
         if (button) {
-
           button.disabled = false;
-
           button.textContent =
             "Send My Analysis →";
         }
-
       }
-
     }
   );
 }
@@ -1808,135 +1543,80 @@ function submitLead(
 
   event.preventDefault();
 
-
   const form =
     event.target;
-
 
   const status =
     document.getElementById(
       "contactStatus"
     );
 
-
   const button =
     form.querySelector(
       'button[type="submit"]'
     );
 
-
   if (button) {
-
     button.disabled = true;
-
     button.textContent =
       "Sending…";
   }
 
-
   if (status) {
-
     status.textContent =
       "Sending your request…";
   }
 
-
   const data =
     normalizeLead(
       form,
-      type || "contact",
-      {
-        source:
-          "Flowexa Website"
-      }
+      type || "contact"
     );
-
 
   postLead(data)
     .then(
-      function(ok) {
+      function (ok) {
 
         if (ok) {
 
           if (status) {
-
             status.textContent =
               "Request received. We'll review the information and follow up.";
           }
 
           form.reset();
 
-        }
-
-        else {
+        } else {
 
           if (status) {
-
             status.textContent =
               "Something went wrong. Please try again or book a strategy call directly.";
           }
-
         }
 
-
         if (button) {
-
           button.disabled = false;
-
           button.textContent =
             "Send Request →";
         }
-
       }
     );
-
 }
 
 
 /* =========================================================
-   INITIALIZATION
+   PAGE INITIALIZATION
    ========================================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
-  function() {
+  function () {
 
     /*
-     * Initialize calculator.
-     */
-
-    calcLeak();
-
-
-    [
-      "missed",
-      "rate",
-      "job"
-    ].forEach(
-      function(id) {
-
-        const element =
-          document.getElementById(
-            id
-          );
-
-
-        if (element) {
-
-          element.addEventListener(
-            "input",
-            calcLeak
-          );
-
-        }
-
-      }
-    );
-
-
-    /*
-     * Close modal when clicking
-     * outside the modal box.
+     * IMPORTANT:
+     * Do NOT call calcLeak() here.
+     * The calculator changes only when
+     * the user clicks Calculate My Revenue Leak.
      */
 
     const modal =
@@ -1944,26 +1624,20 @@ document.addEventListener(
         "modal"
       );
 
-
     if (modal) {
 
       modal.addEventListener(
         "click",
-        function(event) {
+        function (event) {
 
           if (
             event.target === modal
           ) {
-
             closeModal();
-
           }
-
         }
       );
-
     }
-
   }
 );
 
@@ -1974,22 +1648,19 @@ document.addEventListener(
 
 window.addEventListener(
   "scroll",
-  function() {
+  function () {
 
     const progress =
       document.getElementById(
         "scrollProgress"
       );
 
-
     if (!progress) return;
-
 
     const height =
       document.documentElement
         .scrollHeight -
       window.innerHeight;
-
 
     const percentage =
       height > 0
@@ -1999,10 +1670,8 @@ window.addEventListener(
           ) * 100
         : 0;
 
-
     progress.style.width =
       percentage + "%";
-
   }
 );
 
@@ -2013,15 +1682,12 @@ window.addEventListener(
 
 document.addEventListener(
   "keydown",
-  function(event) {
+  function (event) {
 
     if (
       event.key === "Escape"
     ) {
-
       closeModal();
-
     }
-
   }
 );
