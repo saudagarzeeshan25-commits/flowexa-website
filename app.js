@@ -1,7 +1,6 @@
 const CAL_URL="https://cal.com/saudagar-zeeshan-sttyxl/30min";
 
 const CONFIG={
-  // Paste your deployed Google Apps Script /exec URL here.
   SHEET_WEBHOOK_URL:"https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec"
 };
 
@@ -14,108 +13,81 @@ const PDFS={
 
 let pendingPdf="";
 
-/* =========================================================
-   CAL.COM INLINE EMBED
-   ========================================================= */
-
-let calScriptPromise=null;
-
-function loadCalScript(){
+function ensureCalBootstrap(){
 
   if(
     window.Cal &&
-    typeof window.Cal==="function"
+    typeof window.Cal === "function"
   ){
-    return Promise.resolve();
+    return;
   }
 
-  if(calScriptPromise){
-    return calScriptPromise;
-  }
+  (function(C,A,L){
 
-  calScriptPromise=new Promise((resolve,reject)=>{
+    let p=function(a,ar){
+      a.q.push(ar);
+    };
 
-    const existing=document.querySelector(
-      'script[src="https://app.cal.com/embed/embed.js"]'
-    );
+    let d=C.document;
 
-    if(existing){
+    C.Cal=C.Cal||function(){
 
-      let attempts=0;
+      let cal=C.Cal;
+      let ar=arguments;
 
-      const timer=setInterval(()=>{
+      if(!cal.loaded){
 
-        attempts++;
+        cal.ns={};
+        cal.q=cal.q||[];
 
-        if(
-          window.Cal &&
-          typeof window.Cal==="function"
-        ){
-          clearInterval(timer);
-          resolve();
-          return;
-        }
+        const script=
+          d.createElement("script");
 
-        if(attempts>=100){
+        script.async=true;
+        script.src=A;
 
-          clearInterval(timer);
+        d.head.appendChild(script);
 
-          reject(
-            new Error(
-              "Cal.com embed script did not initialize."
-            )
-          );
-
-        }
-
-      },100);
-
-      return;
-    }
-
-    const script=document.createElement("script");
-
-    script.src="https://app.cal.com/embed/embed.js";
-    script.async=true;
-
-    script.onload=()=>{
-
-      if(
-        window.Cal &&
-        typeof window.Cal==="function"
-      ){
-
-        resolve();
-
-      }else{
-
-        reject(
-          new Error(
-            "Cal.com loaded but window.Cal is unavailable."
-          )
-        );
+        cal.loaded=true;
 
       }
 
+      if(ar[0]===L){
+
+        const api=function(){
+          p(api,arguments);
+        };
+
+        const namespace=ar[1];
+
+        api.q=api.q||[];
+
+        if(typeof namespace === "string"){
+
+          cal.ns[namespace]=api;
+
+          p(api,ar);
+
+        }else{
+
+          p(cal,ar);
+
+        }
+
+        return;
+      }
+
+      p(cal,ar);
+
     };
 
-    script.onerror=()=>{
+  })(
+    window,
+    "https://app.cal.com/embed/embed.js",
+    "init"
+  );
 
-      reject(
-        new Error(
-          "Could not load Cal.com embed script."
-        )
-      );
-
-    };
-
-    document.head.appendChild(script);
-
-  });
-
-  return calScriptPromise;
 }
-
 
 function initializeCalEmbed(){
 
@@ -128,28 +100,21 @@ function initializeCalEmbed(){
     return;
   }
 
-  if(
-    !window.Cal ||
-    typeof window.Cal!=="function"
-  ){
-
-    showCalFallback();
-
-    return;
-  }
-
-  target.innerHTML="";
-
   try{
+
+    ensureCalBootstrap();
 
     window.Cal(
       "init",
+      "30min",
       {
         origin:"https://cal.com"
       }
     );
 
-    window.Cal(
+    target.innerHTML="";
+
+    window.Cal.ns["30min"](
       "inline",
       {
         elementOrSelector:
@@ -165,34 +130,22 @@ function initializeCalEmbed(){
       }
     );
 
-    try{
-
-      window.Cal(
-        "ui",
-        {
-          styles:{
-            branding:{
-              brandColor:"#1d68f2"
-            }
-          },
-
-          hideEventTypeDetails:false
-        }
-      );
-
-    }catch(uiError){
-
-      console.warn(
-        "Cal.com UI configuration skipped:",
-        uiError
-      );
-
-    }
+    window.Cal.ns["30min"](
+      "ui",
+      {
+        styles:{
+          branding:{
+            brandColor:"#1d68f2"
+          }
+        },
+        hideEventTypeDetails:false
+      }
+    );
 
   }catch(error){
 
     console.error(
-      "Cal.com inline embed error:",
+      "Cal.com inline initialization failed:",
       error
     );
 
@@ -201,7 +154,6 @@ function initializeCalEmbed(){
   }
 
 }
-
 
 function showCalFallback(){
 
@@ -239,22 +191,28 @@ function showCalFallback(){
     </div>
 
   `;
-}
 
+}
 
 function openCal(){
 
-  const m=
+  const modal=
     document.getElementById("modal");
 
-  const c=
+  const content=
     document.getElementById("modalContent");
 
-  if(!m || !c){
+  if(!modal || !content){
+
+    console.error(
+      "Flowexa modal elements were not found."
+    );
+
     return;
+
   }
 
-  c.innerHTML=`
+  content.innerHTML=`
 
     <button
       class="close"
@@ -311,44 +269,37 @@ function openCal(){
 
   requestAnimationFrame(()=>{
 
-    loadCalScript()
+    try{
 
-      .then(()=>{
+      initializeCalEmbed();
 
-        requestAnimationFrame(
-          initializeCalEmbed
-        );
+    }catch(error){
 
-      })
+      console.error(
+        "Cal.com initialization failed:",
+        error
+      );
 
-      .catch(error=>{
+      showCalFallback();
 
-        console.error(
-          "Cal.com loading failed:",
-          error
-        );
-
-        showCalFallback();
-
-      });
+    }
 
   });
 
 }
 
-
 function openModalShell(){
 
-  const m=
+  const modal=
     document.getElementById("modal");
 
-  if(!m){
+  if(!modal){
     return;
   }
 
-  m.classList.add("open");
+  modal.classList.add("open");
 
-  m.setAttribute(
+  modal.setAttribute(
     "aria-hidden",
     "false"
   );
@@ -358,11 +309,6 @@ function openModalShell(){
   );
 
 }
-
-
-/* =========================================================
-   PDF RESOURCE GATE
-   ========================================================= */
 
 function openPdfGate(type){
 
@@ -544,7 +490,6 @@ function openPdfGate(type){
 
 }
 
-
 async function submitPdfLead(e){
 
   e.preventDefault();
@@ -625,11 +570,6 @@ async function submitPdfLead(e){
 
 }
 
-
-/* =========================================================
-   GOOGLE SHEETS
-   ========================================================= */
-
 async function sendLead(data){
 
   const payload={
@@ -672,13 +612,8 @@ async function sendLead(data){
     );
 
     return false;
-  }
 
-  /*
-   * Use a native POST into a hidden iframe.
-   * This avoids CORS/preflight issues with Google Apps Script on GitHub Pages.
-   * The Apps Script endpoint accepts normal form fields.
-   */
+  }
 
   try{
 
@@ -773,11 +708,6 @@ async function sendLead(data){
   }
 
 }
-
-
-/* =========================================================
-   GENERAL MODALS
-   ========================================================= */
 
 function openModal(type){
 
@@ -1189,11 +1119,6 @@ function openModal(type){
 
 }
 
-
-/* =========================================================
-   BOOKED JOB PLAYBOOK
-   ========================================================= */
-
 function playbookHTML(){
 
   return `
@@ -1229,6 +1154,7 @@ function playbookHTML(){
       </h3>
 
       <ol>
+
         <li>
           Choose a service with meaningful ticket size
           and clear customer pain.
@@ -1248,6 +1174,7 @@ function playbookHTML(){
           Write down the jobs you will <em>not</em> take.
           Margin and capacity matter more than vanity lead volume.
         </li>
+
       </ol>
 
       <h3>
@@ -1255,6 +1182,7 @@ function playbookHTML(){
       </h3>
 
       <ul>
+
         <li>
           Make the outcome obvious:
           what problem is solved, for whom, and what happens next.
@@ -1270,6 +1198,7 @@ function playbookHTML(){
           Give the prospect one obvious next step:
           call, estimate, inspection or consultation.
         </li>
+
       </ul>
 
       <h3>
@@ -1307,6 +1236,7 @@ function playbookHTML(){
       </h3>
 
       <ol>
+
         <li>
           Decide who owns every new inquiry.
         </li>
@@ -1327,6 +1257,7 @@ function playbookHTML(){
         <li>
           Qualify before spending expensive sales time.
         </li>
+
       </ol>
 
       <h3>
@@ -1462,11 +1393,6 @@ function playbookHTML(){
   `;
 
 }
-
-
-/* =========================================================
-   REVENUE RECOVERY MAP
-   ========================================================= */
 
 function recoveryHTML(){
 
@@ -1673,11 +1599,6 @@ function recoveryHTML(){
 
 }
 
-
-/* =========================================================
-   LEAD FOLLOW-UP SEQUENCE
-   ========================================================= */
-
 function followupHTML(){
 
   return `
@@ -1843,11 +1764,6 @@ function followupHTML(){
 
 }
 
-
-/* =========================================================
-   AI FRONT DESK BLUEPRINT
-   ========================================================= */
-
 function receptionistHTML(){
 
   return `
@@ -1875,6 +1791,7 @@ function receptionistHTML(){
       </h3>
 
       <ul>
+
         <li>
           Answer common questions from approved information.
         </li>
@@ -1894,6 +1811,7 @@ function receptionistHTML(){
         <li>
           Create a clean handoff when a human is required.
         </li>
+
       </ul>
 
       <h3>
@@ -2012,11 +1930,6 @@ function receptionistHTML(){
 
 }
 
-
-/* =========================================================
-   BOOKED JOB SCORE
-   ========================================================= */
-
 function auditShell(){
 
   return `
@@ -2044,7 +1957,6 @@ function auditShell(){
   `;
 
 }
-
 
 const qs=[
 
@@ -2139,7 +2051,6 @@ const qs=[
 
 let auditAnswers=[];
 
-
 function renderAudit(){
 
   const app=
@@ -2155,6 +2066,7 @@ function renderAudit(){
     showAuditLeadGate();
 
     return;
+
   }
 
   const q=
@@ -2200,7 +2112,6 @@ function renderAudit(){
 
 }
 
-
 function answerAudit(n){
 
   auditAnswers.push(n);
@@ -2208,7 +2119,6 @@ function answerAudit(n){
   renderAudit();
 
 }
-
 
 function showAuditLeadGate(){
 
@@ -2288,7 +2198,6 @@ function showAuditLeadGate(){
 
 }
 
-
 async function submitAuditLead(e){
 
   e.preventDefault();
@@ -2299,6 +2208,7 @@ async function submitAuditLead(e){
     );
 
   data.type="audit";
+
   data.auditAnswers=
     auditAnswers;
 
@@ -2336,7 +2246,6 @@ async function submitAuditLead(e){
 
 }
 
-
 function showAuditResult(){
 
   const a=
@@ -2348,31 +2257,39 @@ function showAuditResult(){
     a[0]===0 ||
     a[0]===4
   ){
+
     gaps.push([
       "Missed-call recovery",
       "HIGH"
     ]);
+
   }
 
   if(a[1]>=2){
+
     gaps.push([
       "Lead response speed",
       "HIGH"
     ]);
+
   }
 
   if(a[2]<=1){
+
     gaps.push([
       "Appointment booking",
       "MEDIUM"
     ]);
+
   }
 
   if(a[3]!==1){
+
     gaps.push([
       "Follow-up discipline",
       "HIGH"
     ]);
+
   }
 
   if(
@@ -2380,34 +2297,42 @@ function showAuditResult(){
     a[4]===2 ||
     a[4]===3
   ){
+
     gaps.push([
       "Customer reactivation",
       "MEDIUM"
     ]);
+
   }
 
   if(
     a[5]===1 ||
     a[5]===4
   ){
+
     gaps.push([
       "Lead visibility",
       "MEDIUM"
     ]);
+
   }
 
   if(a[6]>=2){
+
     gaps.push([
       "Owner reporting",
       "MEDIUM"
     ]);
+
   }
 
   if(a[7]===0){
+
     gaps.push([
       "Automation foundation",
       "HIGH"
     ]);
+
   }
 
   let score=
@@ -2513,11 +2438,6 @@ function showAuditResult(){
 
 }
 
-
-/* =========================================================
-   REVENUE LEAK CALCULATOR
-   ========================================================= */
-
 function calcLeak(){
 
   const m=
@@ -2621,7 +2541,6 @@ function calcLeak(){
 
 }
 
-
 async function submitCalcLead(e){
 
   e.preventDefault();
@@ -2664,11 +2583,6 @@ async function submitCalcLead(e){
 
 }
 
-
-/* =========================================================
-   GENERAL FORM SUBMISSION
-   ========================================================= */
-
 async function submitLead(
   e,
   type
@@ -2693,19 +2607,15 @@ async function submitLead(
     location.pathname;
 
   const status=
-
     form.querySelector(
       "#contactStatus"
     ) ||
-
     form.querySelector(
       "#formStatus"
     ) ||
-
     form.querySelector(
       ".form-status"
     ) ||
-
     form.querySelector(
       '.small[aria-live="polite"]'
     );
@@ -2780,11 +2690,6 @@ async function submitLead(
 
 }
 
-
-/* =========================================================
-   CLOSE MODAL
-   ========================================================= */
-
 function closeModal(){
 
   const m=
@@ -2811,7 +2716,6 @@ function closeModal(){
 
 }
 
-
 const modal=
   document.getElementById(
     "modal"
@@ -2836,7 +2740,6 @@ if(modal){
 
 }
 
-
 document.addEventListener(
   "keydown",
   e=>{
@@ -2851,11 +2754,6 @@ document.addEventListener(
 
   }
 );
-
-
-/* =========================================================
-   SCROLL PROGRESS
-   ========================================================= */
 
 function updateScrollProgress(){
 
@@ -2888,7 +2786,6 @@ function updateScrollProgress(){
 
 }
 
-
 window.addEventListener(
   "scroll",
   updateScrollProgress,
@@ -2901,11 +2798,6 @@ window.addEventListener(
 );
 
 updateScrollProgress();
-
-
-/* =========================================================
-   TOAST
-   ========================================================= */
 
 function toast(t){
 
