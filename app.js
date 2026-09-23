@@ -1,4 +1,5 @@
 const CAL_URL="https://cal.com/zeeshan-saudagar/30min";
+const CAL_PATH=CAL_URL.replace("https://cal.com/","");
 
 const CONFIG={
   SHEET_WEBHOOK_URL:"https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec"
@@ -166,7 +167,7 @@ function initializeCalEmbed(){
           "#flowexaCalEmbed",
 
         calLink:
-          "saudagar-zeeshan-sttyxl/30min",
+          CAL_PATH,
 
         config:{
           layout:"month_view",
