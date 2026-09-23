@@ -318,7 +318,7 @@ function openPdfGate(type){
     playbook:"The Booked Job Playbook™",
     recovery:"Revenue Recovery Map™",
     followup:"Lead Follow-Up Sequence™",
-    receptionist:"AI Front Desk Blueprint™"
+    receptionist:"AI Receptionist Blueprint™"
   };
 
   const c=
@@ -718,127 +718,6 @@ function openModal(type){
 
   c.innerHTML=
     '<button class="close" onclick="closeModal()">×</button>';
-
-  if(type==="pilot"){
-
-    c.innerHTML+=`
-
-      <div class="eyebrow">
-        Free Pilot
-      </div>
-
-      <h2>
-        Apply for the Flowexa Free Pilot.
-      </h2>
-
-      <p class="small">
-        We are not looking for a perfect business.
-        We are looking for a real process where
-        fixing one bottleneck could create meaningful value.
-      </p>
-
-      <form
-        onsubmit="submitLead(event,'pilot')"
-      >
-
-        <div class="formgrid">
-
-          <div class="field">
-            <label>First name *</label>
-            <input
-              name="firstName"
-              required
-            >
-          </div>
-
-          <div class="field">
-            <label>Last name *</label>
-            <input
-              name="lastName"
-              required
-            >
-          </div>
-
-          <div class="field">
-            <label>Business email *</label>
-            <input
-              name="email"
-              type="email"
-              required
-            >
-          </div>
-
-          <div class="field">
-            <label>Company *</label>
-            <input
-              name="company"
-              required
-            >
-          </div>
-
-          <div class="field">
-            <label>Website *</label>
-            <input
-              name="website"
-              type="url"
-              placeholder="https://"
-              required
-            >
-          </div>
-
-          <div class="field">
-            <label>Business type *</label>
-
-            <select
-              name="type"
-              required
-            >
-
-              <option value="">
-                Select one
-              </option>
-
-              <option>Roofing</option>
-              <option>HVAC</option>
-              <option>Plumbing</option>
-              <option>Kitchen Remodeling</option>
-              <option>Interior Design</option>
-              <option>Med Spa</option>
-              <option>Other</option>
-
-            </select>
-
-          </div>
-
-          <div class="field full">
-
-            <label>
-              What would you most like fixed? *
-            </label>
-
-            <textarea
-              name="challenge"
-              rows="4"
-              required
-              placeholder="Missed calls, slow response, estimates, follow-up, booking, etc."
-            ></textarea>
-
-          </div>
-
-        </div>
-
-        <button
-          class="btn blue glow"
-          style="margin-top:18px"
-        >
-          Submit Pilot Application →
-        </button>
-
-      </form>
-
-    `;
-
-  }
 
   if(type==="playbook"){
     c.innerHTML+=playbookHTML();
@@ -1769,7 +1648,7 @@ function receptionistHTML(){
   return `
 
     <div class="eyebrow">
-      AI Front Desk Blueprint™
+      AI Receptionist Blueprint™
     </div>
 
     <h2>

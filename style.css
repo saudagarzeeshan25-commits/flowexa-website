@@ -1062,6 +1062,39 @@ a{
 }
 
 
+.about-grid{
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:48px;
+  align-items:start
+}
+
+.about-photo img{
+  width:220px;
+  height:220px;
+  border-radius:50%;
+  object-fit:cover;
+  box-shadow:var(--shadow)
+}
+
+.about-copy h2{
+  font-size:clamp(30px,3.6vw,42px);
+  line-height:1.05;
+  letter-spacing:-.03em;
+  margin:6px 0 18px
+}
+
+.about-copy p{
+  color:var(--muted);
+  margin:0 0 16px;
+  max-width:60ch
+}
+
+.about-copy .btn{
+  margin-top:8px
+}
+
+
 /* =========================================================
    RESPONSIVE
    ========================================================= */
@@ -1070,6 +1103,19 @@ a{
 
   .links{
     display:none
+  }
+
+  .about-grid{
+    grid-template-columns:1fr;
+    text-align:center
+  }
+
+  .about-photo img{
+    margin:0 auto
+  }
+
+  .about-copy p{
+    max-width:none
   }
 
   .hero-grid,
