@@ -1,4 +1,4 @@
-const CAL_URL="https://cal.com/saudagar-zeeshan-sttyxl/30min";
+const CAL_URL="https://cal.com/zeeshan-saudagar/30min";
 
 const CONFIG={
   SHEET_WEBHOOK_URL:"https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec"
@@ -12,6 +12,51 @@ const PDFS={
 };
 
 let pendingPdf="";
+
+function toggleMobileNav(){
+
+  const panel=
+    document.getElementById(
+      "mobileLinks"
+    );
+
+  const btn=
+    document.getElementById(
+      "navToggle"
+    );
+
+  const isOpen=
+    panel.classList.toggle(
+      "open"
+    );
+
+  btn.classList.toggle(
+    "open",
+    isOpen
+  );
+
+  btn.setAttribute(
+    "aria-expanded",
+    isOpen ? "true" : "false"
+  );
+
+}
+
+function closeMobileNav(){
+
+  document
+    .getElementById("mobileLinks")
+    .classList.remove("open");
+
+  const btn=
+    document.getElementById(
+      "navToggle"
+    );
+
+  btn.classList.remove("open");
+  btn.setAttribute("aria-expanded","false");
+
+}
 
 function ensureCalBootstrap(){
 

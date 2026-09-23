@@ -77,6 +77,7 @@
 
     <nav class="links">
       <a href="#systems">Solutions</a>
+      <a href="#calculator">Calculator</a>
       <a href="#industries">Industries</a>
       <a href="#how">How It Works</a>
       <a href="#resources">Free Resources</a>
@@ -93,9 +94,31 @@
         Book a Strategy Call <span>→</span>
       </button>
 
+      <button
+        class="navtoggle"
+        id="navToggle"
+        aria-label="Open menu"
+        aria-expanded="false"
+        onclick="toggleMobileNav()"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
     </div>
 
   </div>
+
+  <nav class="mobile-links" id="mobileLinks">
+    <a href="#systems" onclick="closeMobileNav()">Solutions</a>
+    <a href="#calculator" onclick="closeMobileNav()">Calculator</a>
+    <a href="#industries" onclick="closeMobileNav()">Industries</a>
+    <a href="#how" onclick="closeMobileNav()">How It Works</a>
+    <a href="#resources" onclick="closeMobileNav()">Free Resources</a>
+    <a href="#about" onclick="closeMobileNav()">About</a>
+    <a href="#contact" onclick="closeMobileNav()">Contact</a>
+  </nav>
 </header>
 
 
