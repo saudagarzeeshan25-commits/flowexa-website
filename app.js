@@ -150,9 +150,12 @@ function initializeCalEmbed(){
 
     ensureCalBootstrap();
 
+    const ns=
+      "cal"+Date.now();
+
     window.Cal(
       "init",
-      "30min",
+      ns,
       {
         origin:"https://cal.com"
       }
@@ -160,7 +163,7 @@ function initializeCalEmbed(){
 
     target.innerHTML="";
 
-    window.Cal.ns["30min"](
+    window.Cal.ns[ns](
       "inline",
       {
         elementOrSelector:
@@ -176,7 +179,7 @@ function initializeCalEmbed(){
       }
     );
 
-    window.Cal.ns["30min"](
+    window.Cal.ns[ns](
       "ui",
       {
         styles:{
