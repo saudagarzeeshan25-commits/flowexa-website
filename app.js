@@ -110,9 +110,12 @@ function ensureCalBootstrap(){
 
         if(typeof namespace === "string"){
 
-          cal.ns[namespace]=api;
+          cal.ns[namespace]=
+            cal.ns[namespace] || api;
 
-          p(api,ar);
+          p(cal.ns[namespace],ar);
+
+          p(cal,["initNamespace",namespace]);
 
         }else{
 
