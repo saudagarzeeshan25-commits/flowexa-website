@@ -5,6 +5,8 @@ const CONFIG={
   SHEET_WEBHOOK_URL:"https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec"
 };
 
+const FORM_KEY="fx_403507770faec6a8c6e2c968";
+
 const PDFS={
   playbook:"booked-job-playbook.pdf",
   recovery:"revenue-recovery-map.pdf",
@@ -406,6 +408,15 @@ function openPdfGate(type){
 
     <form onsubmit="submitPdfLead(event)">
 
+      <input
+        type="text"
+        name="_hp"
+        class="hp-field"
+        tabindex="-1"
+        autocomplete="off"
+        aria-hidden="true"
+      >
+
       <div class="formgrid">
 
         <div class="field">
@@ -624,8 +635,20 @@ async function submitPdfLead(e){
 
 async function sendLead(data){
 
+  /*
+   * Honeypot: real visitors never see or
+   * fill this field. If it has a value,
+   * silently drop the submission instead
+   * of tipping off the bot.
+   */
+
+  if(data._hp){
+    return true;
+  }
+
   const payload={
     source:"Flowexa website",
+    formKey:FORM_KEY,
     ...data,
 
     business:
@@ -805,18 +828,27 @@ function openModal(type){
       </div>
 
       <h2>
-        Send this analysis to me.
+        Get this analysis in your inbox.
       </h2>
 
       <p class="small">
-        We'll save the calculator inputs with
-        your contact details so Flowexa can follow
+        We'll email you a copy of this breakdown
+        and save your details so Flowexa can follow
         up with context instead of starting from zero.
       </p>
 
       <form
         onsubmit="submitCalcLead(event)"
       >
+
+        <input
+          type="text"
+          name="_hp"
+          class="hp-field"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+        >
 
         <div class="formgrid">
 
@@ -869,7 +901,7 @@ function openModal(type){
           class="btn blue glow"
           style="margin-top:18px"
         >
-          Save My Analysis →
+          Email My Analysis →
         </button>
 
       </form>
@@ -900,6 +932,15 @@ function openModal(type){
       <form
         onsubmit="submitLead(event,'recovery-map')"
       >
+
+        <input
+          type="text"
+          name="_hp"
+          class="hp-field"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+        >
 
         <div class="formgrid">
 
@@ -2077,6 +2118,15 @@ function showAuditLeadGate(){
       onsubmit="submitAuditLead(event)"
     >
 
+      <input
+        type="text"
+        name="_hp"
+        class="hp-field"
+        tabindex="-1"
+        autocomplete="off"
+        aria-hidden="true"
+      >
+
       <div class="formgrid">
 
         <div class="field">
@@ -2391,6 +2441,9 @@ function calcLeak(){
   const rev=
     m*r*j;
 
+  window.lastCalculatedRevenue=
+    rev;
+
   const intensity=
     Math.max(
       12,
@@ -2482,7 +2535,12 @@ async function submitCalcLead(e){
     );
 
   data.type=
-    "calculator";
+    "calculator-lead";
+
+  data.calculatedRevenue=
+    Math.round(
+      window.lastCalculatedRevenue || 0
+    );
 
   data.missedCalls=
     document.getElementById(
