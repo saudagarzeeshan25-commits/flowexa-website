@@ -2,7 +2,7 @@ const CAL_URL="https://cal.com/zeeshan-saudagar/30min";
 const CAL_PATH=CAL_URL.replace("https://cal.com/","");
 
 const CONFIG={
-  SHEET_WEBHOOK_URL:"https://script.google.com/macros/s/AKfycbweN1Y4g86OuTwJUwf1N3D65tJX5awpE5MG1ElSuOoaa3IaXGzWliPeApWr0D1Z-xveJg/exec"
+  SHEET_WEBHOOK_URL:"https://script.google.com/macros/s/AKfycbwHNrKEfAjCsiBzsjlLwjRo6nxAcbanUYf5DW-aZZDy_WoNYOs7XbR5z5BSdNo-d4AGpg/exec"
 };
 
 const FORM_KEY="fx_403507770faec6a8c6e2c968";
