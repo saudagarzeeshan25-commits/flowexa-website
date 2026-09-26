@@ -408,16 +408,7 @@ function openPdfGate(type){
 
     <form onsubmit="submitPdfLead(event)">
 
-      <input
-        type="text"
-        name="_hp"
-        class="hp-field"
-        tabindex="-1"
-        autocomplete="off"
-        aria-hidden="true"
-      >
-
-      <div class="formgrid">
+<div class="formgrid">
 
         <div class="field">
           <label>Full name *</label>
@@ -635,17 +626,6 @@ async function submitPdfLead(e){
 
 async function sendLead(data){
 
-  /*
-   * Honeypot: real visitors never see or
-   * fill this field. If it has a value,
-   * silently drop the submission instead
-   * of tipping off the bot.
-   */
-
-  if(data._hp){
-    return {success:true,emailSent:null};
-  }
-
   const payload={
     source:"Flowexa website",
     formKey:FORM_KEY,
@@ -820,16 +800,7 @@ function openModal(type){
         onsubmit="submitCalcLead(event)"
       >
 
-        <input
-          type="text"
-          name="_hp"
-          class="hp-field"
-          tabindex="-1"
-          autocomplete="off"
-          aria-hidden="true"
-        >
-
-        <div class="formgrid">
+<div class="formgrid">
 
           <div class="field">
             <label>Full name *</label>
@@ -912,16 +883,7 @@ function openModal(type){
         onsubmit="submitLead(event,'recovery-map')"
       >
 
-        <input
-          type="text"
-          name="_hp"
-          class="hp-field"
-          tabindex="-1"
-          autocomplete="off"
-          aria-hidden="true"
-        >
-
-        <div class="formgrid">
+<div class="formgrid">
 
           <div class="field">
             <label>Full name *</label>
@@ -2097,16 +2059,7 @@ function showAuditLeadGate(){
       onsubmit="submitAuditLead(event)"
     >
 
-      <input
-        type="text"
-        name="_hp"
-        class="hp-field"
-        tabindex="-1"
-        autocomplete="off"
-        aria-hidden="true"
-      >
-
-      <div class="formgrid">
+<div class="formgrid">
 
         <div class="field">
           <label>Full name *</label>
