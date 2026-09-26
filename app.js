@@ -581,10 +581,10 @@ async function submitPdfLead(e){
 
   }
 
-  const ok=
+  const result=
     await sendLead(data);
 
-  if(!ok){
+  if(!result.success){
 
     if(status){
 
@@ -643,7 +643,7 @@ async function sendLead(data){
    */
 
   if(data._hp){
-    return true;
+    return {success:true,emailSent:null};
   }
 
   const payload={
@@ -686,90 +686,64 @@ async function sendLead(data){
       "Flowexa: Google Apps Script URL is missing."
     );
 
-    return false;
+    return {
+      success:false,
+      emailSent:null,
+      message:"Configuration error."
+    };
 
   }
 
+  /*
+   * Use a real fetch (not a hidden-iframe form
+   * submit) so we can actually read back whether
+   * the lead was recorded and whether the
+   * calculator email was sent. application/
+   * x-www-form-urlencoded is a "simple" request,
+   * so no CORS preflight is needed.
+   */
+
+  const body=
+    new URLSearchParams();
+
+  Object.entries(
+    payload
+  ).forEach(
+    ([key,value])=>{
+
+      body.append(
+        key,
+        Array.isArray(value)
+          ? JSON.stringify(value)
+          : String(value ?? "")
+      );
+
+    }
+  );
+
   try{
 
-    const frameName=
-      "flowexa_submit_" +
-      Date.now();
-
-    const iframe=
-      document.createElement(
-        "iframe"
+    const res=
+      await fetch(
+        url,
+        {
+          method:"POST",
+          body:body
+        }
       );
 
-    iframe.name=
-      frameName;
+    const json=
+      await res.json();
 
-    iframe.style.display=
-      "none";
-
-    document.body.appendChild(
-      iframe
-    );
-
-    const form=
-      document.createElement(
-        "form"
-      );
-
-    form.method=
-      "POST";
-
-    form.action=
-      url;
-
-    form.target=
-      frameName;
-
-    form.style.display=
-      "none";
-
-    Object.entries(
-      payload
-    ).forEach(
-      ([key,value])=>{
-
-        const input=
-          document.createElement(
-            "input"
-          );
-
-        input.type=
-          "hidden";
-
-        input.name=
-          key;
-
-        input.value=
-          Array.isArray(value)
-            ? JSON.stringify(value)
-            : String(value ?? "");
-
-        form.appendChild(
-          input
-        );
-
-      }
-    );
-
-    document.body.appendChild(
-      form
-    );
-
-    form.submit();
-
-    setTimeout(()=>{
-
-      form.remove();
-      iframe.remove();
-
-    },8000);
-
-    return true;
+    return {
+      success:!!json.success,
+      emailSent:
+        json.emailSent === true,
+      message:
+        json.message ||
+        json.error ||
+        ""
+    };
 
   }catch(error){
 
@@ -778,7 +752,12 @@ async function sendLead(data){
       error
     );
 
-    return false;
+    return {
+      success:false,
+      emailSent:null,
+      message:
+        "We couldn't reach the server. Please try again."
+    };
 
   }
 
@@ -2185,7 +2164,7 @@ async function submitAuditLead(e){
 
   const data=
     Object.fromEntries(
-      new FormData(e).entries()
+      new FormData(e.target).entries()
     );
 
   data.type="audit";
@@ -2196,10 +2175,10 @@ async function submitAuditLead(e){
   data.page=
     location.pathname;
 
-  const ok=
+  const result=
     await sendLead(data);
 
-  if(!ok){
+  if(!result.success){
 
     const button=
       e.target.querySelector(
@@ -2531,7 +2510,7 @@ async function submitCalcLead(e){
 
   const data=
     Object.fromEntries(
-      new FormData(e).entries()
+      new FormData(e.target).entries()
     );
 
   data.type=
@@ -2560,15 +2539,49 @@ async function submitCalcLead(e){
   data.page=
     location.pathname;
 
-  await sendLead(
-    data
-  );
+  const button=
+    e.target.querySelector(
+      "button"
+    );
+
+  if(button){
+
+    button.disabled=
+      true;
+
+    button.textContent=
+      "Sending…";
+
+  }
+
+  const result=
+    await sendLead(
+      data
+    );
 
   closeModal();
 
-  toast(
-    "Analysis captured. Your inputs are saved for follow-up."
-  );
+  if(!result.success){
+
+    toast(
+      "We couldn't save this. Please try again."
+    );
+
+  }else if(result.emailSent){
+
+    toast(
+      "Analysis emailed to " +
+      (data.email || "you") +
+      "."
+    );
+
+  }else{
+
+    toast(
+      "Saved — but we couldn't confirm the email sent. Check your spam folder, or try again in a minute."
+    );
+
+  }
 
 }
 
@@ -2619,12 +2632,12 @@ async function submitLead(
 
   }
 
-  const ok=
+  const result=
     await sendLead(
       data
     );
 
-  if(ok){
+  if(result.success){
 
     if(status){
 
