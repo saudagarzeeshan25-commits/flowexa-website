@@ -205,6 +205,61 @@ a{
 
 
 /* =========================================================
+   TOOL MARQUEE
+   ========================================================= */
+
+.tool-marquee{
+  background:var(--soft);
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:28px 0 24px;
+  overflow:hidden
+}
+
+.tool-marquee-label{
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:18px
+}
+
+.tool-marquee-track{
+  display:flex;
+  width:max-content;
+  animation:tool-scroll 26s linear infinite
+}
+
+.tool-marquee-group{
+  display:flex;
+  align-items:center;
+  gap:40px;
+  padding-right:40px
+}
+
+.tool-marquee-group span{
+  font-size:18px;
+  font-weight:700;
+  color:var(--ink);
+  opacity:.55;
+  white-space:nowrap
+}
+
+@keyframes tool-scroll{
+  from{ transform:translateX(0) }
+  to{ transform:translateX(-50%) }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .tool-marquee-track{
+    animation:none
+  }
+}
+
+
+/* =========================================================
    HERO
    ========================================================= */
 
