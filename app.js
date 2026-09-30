@@ -2507,10 +2507,27 @@ async function submitCalcLead(e){
 
   }
 
+  const reassureTimer=
+    setTimeout(
+      function(){
+
+        if(button){
+          button.textContent=
+            "Still sending — almost there…";
+        }
+
+      },
+      2500
+    );
+
   const result=
     await sendLead(
       data
     );
+
+  clearTimeout(
+    reassureTimer
+  );
 
   closeModal();
 
