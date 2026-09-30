@@ -229,7 +229,7 @@ a{
 .tool-marquee-track{
   display:flex;
   width:max-content;
-  animation:tool-scroll 26s linear infinite
+  animation:tool-scroll 52s linear infinite
 }
 
 .tool-marquee-group{
